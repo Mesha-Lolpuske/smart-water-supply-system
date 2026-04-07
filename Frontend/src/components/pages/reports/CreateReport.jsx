@@ -2,21 +2,37 @@ import DashboardLayout from '../../layout/DashboardLayout'
 import { ArrowLeft, Send } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { useState } from 'react'
+import { toast } from 'react-toastify'
+import { reportService } from '../../services/reportService'
 
 function CreateReport() {
   const navigate = useNavigate()
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
   const [formData, setFormData] = useState({
-    title: '', description: '', severity: 'medium', location: '', issueType: ''
+    title: '', description: '', severity: 'medium', location: '', reportType: ''
   })
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value })
   }
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
-    alert('Report submitted successfully!')
-    navigate('/reports/my-reports')
+    try {
+      setLoading(true)
+      setError('')
+      const res = await reportService.createReport(formData)
+      if (res.success) {
+        toast.success('Report submitted successfully!')
+        navigate('/reports/my-reports')
+      }
+    } catch (err) {
+      console.error('Error submitting report:', err)
+      setError(err.response?.data?.message || 'Failed to submit report')
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
@@ -33,16 +49,21 @@ function CreateReport() {
         <h1 className="mb-2 text-3xl font-bold text-blue-950">Report an Issue</h1>
         <p className="mb-8 text-slate-600">Help us improve service by reporting problems immediately</p>
 
+        {error && (
+          <div className="p-4 mb-6 bg-red-50 text-red-600 border border-red-100 rounded-lg font-bold">
+            {error}
+          </div>
+        )}
+
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
             <label className="block mb-2 text-sm font-semibold text-blue-950">Issue Type</label>
-            <select name="issueType" value={formData.issueType} onChange={handleChange} className="w-full px-4 py-3 border-2 rounded-lg border-sky-200 focus:outline-none focus:border-sky-400" required>
+            <select name="reportType" value={formData.reportType} onChange={handleChange} className="w-full px-4 py-3 border-2 rounded-lg border-sky-200 focus:outline-none focus:border-sky-400" required>
               <option value="">Select Issue Type</option>
-              <option value="no-supply">No Water Supply</option>
-              <option value="low-pressure">Low Water Pressure</option>
-              <option value="contamination">Water Contamination</option>
               <option value="leak">Pipe Leak</option>
-              <option value="meter">Meter Malfunction</option>
+              <option value="outage">No Water Supply (Outage)</option>
+              <option value="low_pressure">Low Pressure</option>
+              <option value="contamination">Water Contamination</option>
               <option value="other">Other</option>
             </select>
           </div>
@@ -73,9 +94,13 @@ function CreateReport() {
           </div>
 
           <div className="flex gap-4 pt-4">
-            <button type="submit" className="flex items-center justify-center flex-1 gap-2 px-6 py-3 font-semibold text-white transition-all rounded-lg bg-gradient-to-r from-sky-500 to-blue-600 hover:shadow-lg">
+            <button 
+              type="submit" 
+              disabled={loading}
+              className="flex items-center justify-center flex-1 gap-2 px-6 py-3 font-semibold text-white transition-all rounded-lg bg-gradient-to-r from-sky-500 to-blue-600 hover:shadow-lg disabled:opacity-50"
+            >
               <Send size={20} />
-              Submit Report
+              {loading ? 'Submitting...' : 'Submit Report'}
             </button>
             <button type="button" onClick={() => navigate(-1)} className="flex-1 px-6 py-3 font-semibold transition-all border-2 rounded-lg text-blue-950 border-sky-300 hover:bg-sky-50">
               Cancel

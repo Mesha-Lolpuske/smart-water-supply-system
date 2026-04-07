@@ -2,28 +2,58 @@ import api from './api'
 
 export const reportService = {
   // Get all reports
-  getAllReports: (filters = {}) => api.get('/reports', { params: filters }),
+  getAllReports: async (filters = {}) => {
+    const response = await api.get('/reports', { params: filters });
+    return response.data;
+  },
   
   // Get user's reports
-  getMyReports: (filters = {}) => api.get('/reports/my-reports', { params: filters }),
+  getMyReports: async (filters = {}) => {
+    const response = await api.get('/reports/my-reports', { params: filters });
+    return response.data;
+  },
   
   // Get single report
-  getReportById: (id) => api.get(`/reports/${id}`),
+  getReportById: async (id) => {
+    const response = await api.get(`/reports/${id}`);
+    return response.data;
+  },
   
   // Create report
-  createReport: (reportData) => api.post('/reports', reportData),
+  createReport: async (reportData) => {
+    const response = await api.post('/reports', reportData);
+    return response.data;
+  },
   
   // Update report
-  updateReport: (id, reportData) => api.put(`/reports/${id}`, reportData),
+  updateReport: async (id, reportData) => {
+    const response = await api.put(`/reports/${id}`, reportData);
+    return response.data;
+  },
   
   // Delete report
-  deleteReport: (id) => api.delete(`/reports/${id}`),
+  deleteReport: async (id) => {
+    const response = await api.delete(`/reports/${id}`);
+    return response.data;
+  },
   
   // Add comment to report
-  addComment: (reportId, comment) => api.post(`/reports/${reportId}/comments`, { comment }),
+  addComment: async (reportId, comment) => {
+    const response = await api.post(`/reports/${reportId}/comments`, { comment });
+    return response.data;
+  },
   
   // Change report status
-  updateStatus: (id, status) => api.patch(`/reports/${id}/status`, { status }),
+  updateStatus: async (id, status, notes = {}) => {
+    const response = await api.patch(`/reports/${id}/status`, { status, ...notes });
+    return response.data;
+  },
+
+  // Assign technician (Admin only)
+  assignTechnician: async (id, technicianId) => {
+    const response = await api.patch(`/reports/${id}/assign`, { technicianId });
+    return response.data;
+  },
 }
 
 export default reportService

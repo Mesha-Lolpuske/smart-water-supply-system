@@ -1,8 +1,17 @@
 import { useNavigate } from 'react-router-dom'
 import { Bell, User, LogOut, Droplet, Search } from 'lucide-react'
+import { useSearch } from '../context/SearchContext'
+import { useAuth } from '../hooks/useAuth'
 
 function Header() {
   const navigate = useNavigate()
+  const { searchQuery, setSearchQuery } = useSearch()
+  const { logout } = useAuth()
+
+  const handleLogout = () => {
+    logout()
+    navigate('/login')
+  }
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 shadow-lg bg-gradient-to-r from-blue-950 to-blue-900 border-b-2 border-sky-400/30">
@@ -20,9 +29,16 @@ function Header() {
           </div>
 
           {/* Search Bar */}
-          <div className="hidden md:flex items-center gap-2 px-4 py-2 rounded-lg bg-white/10 border border-sky-400/20 hover:border-sky-400/50 transition-all">
+          <div className="flex items-center gap-2 px-4 py-2 rounded-lg bg-white/10 border border-sky-400/20 hover:border-sky-400/50 transition-all focus-within:ring-2 focus-within:ring-sky-400/30">
             <Search size={18} className="text-sky-300" />
-            <input type="text" placeholder="Search..." className="bg-transparent text-white placeholder-blue-300 outline-none w-24" />
+            <input 
+              type="text" 
+              placeholder="Search users, reports..." 
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="bg-transparent text-white placeholder-blue-300 outline-none w-28 sm:w-48 transition-all" 
+              autoFocus
+            />
           </div>
 
           {/* User Actions */}
@@ -49,7 +65,7 @@ function Header() {
 
             {/* Logout */}
             <button 
-              onClick={() => navigate('/login')}
+              onClick={handleLogout}
               className="flex items-center gap-2 px-4 py-2 transition rounded-lg text-sky-300 hover:bg-red-500/10 hover:text-red-400 font-medium"
             >
               <LogOut size={20} />

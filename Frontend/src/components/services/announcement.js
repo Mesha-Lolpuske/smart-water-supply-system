@@ -2,28 +2,52 @@ import api from './api'
 
 export const announcementService = {
   // Get all announcements
-  getAllAnnouncements: (filters = {}) => api.get('/announcements', { params: filters }),
+  getAllAnnouncements: async (filters = {}) => {
+    const response = await api.get('/announcements', { params: filters });
+    return response.data;
+  },
   
   // Get single announcement
-  getAnnouncementById: (id) => api.get(`/announcements/${id}`),
+  getAnnouncementById: async (id) => {
+    const response = await api.get(`/announcements/${id}`);
+    return response.data;
+  },
   
   // Create announcement
-  createAnnouncement: (announcementData) => api.post('/announcements', announcementData),
+  createAnnouncement: async (announcementData) => {
+    const response = await api.post('/announcements', announcementData);
+    return response.data;
+  },
   
   // Update announcement
-  updateAnnouncement: (id, announcementData) => api.put(`/announcements/${id}`, announcementData),
+  updateAnnouncement: async (id, announcementData) => {
+    const response = await api.put(`/announcements/${id}`, announcementData);
+    return response.data;
+  },
   
   // Delete announcement
-  deleteAnnouncement: (id) => api.delete(`/announcements/${id}`),
+  deleteAnnouncement: async (id) => {
+    const response = await api.delete(`/announcements/${id}`);
+    return response.data;
+  },
   
   // Get urgent announcements
-  getUrgentAnnouncements: () => api.get('/announcements/urgent'),
+  getUrgentAnnouncements: async () => {
+    const response = await api.get('/announcements/urgent');
+    return response.data;
+  },
   
   // Publish announcement
-  publishAnnouncement: (id) => api.patch(`/announcements/${id}/publish`),
+  publishAnnouncement: async (id) => {
+    const response = await api.patch(`/announcements/${id}/publish`);
+    return response.data;
+  },
   
   // Get announcements by type
-  getAnnouncementsByType: (type) => api.get(`/announcements/type/${type}`),
+  getAnnouncementsByType: async (type) => {
+    const response = await api.get(`/announcements/type/${type}`);
+    return response.data;
+  },
 }
 
 export default announcementService

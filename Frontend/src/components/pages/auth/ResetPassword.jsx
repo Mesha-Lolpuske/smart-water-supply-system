@@ -1,6 +1,9 @@
+/* eslint-disable no-unused-vars */
 import { useState } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { Lock, Eye, EyeOff, Key } from 'lucide-react'
+import { toast } from 'react-toastify'
+import authService from '../../services/authService'
 
 function ResetPasswordPage() {
   const navigate = useNavigate()
@@ -9,37 +12,47 @@ function ResetPasswordPage() {
 
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
+  const [ setLoading] = useState(false)
   const [formData, setFormData] = useState({
     otp: '',
     newPassword: '',
     confirmPassword: ''
   })
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
     
     // Validation
     if (formData.otp.length !== 6) {
-      alert('Please enter a valid 6-digit code')
+      toast.error('Please enter a valid 6-digit code')
       return
     }
 
     if (formData.newPassword !== formData.confirmPassword) {
-      alert('Passwords do not match!')
+      toast.error('Passwords do not match!')
       return
     }
     
     if (formData.newPassword.length < 6) {
-      alert('Password must be at least 6 characters!')
+      toast.error('Password must be at least 6 characters!')
       return
     }
     
-    // Will handle reset password API call later
-    console.log('Reset password:', { email, ...formData })
-    
-    // Show success and navigate to login
-    alert('Password reset successful!')
-    navigate('/login')
+    setLoading(true)
+    try {
+      const result = await authService.resetPassword(email, formData.otp, formData.newPassword)
+      
+      if (result.success) {
+        toast.success('Password reset successful! Please login.')
+        navigate('/login')
+      } else {
+        toast.error(result.error)
+      }
+    } catch (err) {
+      toast.error('Failed to reset password. Please try again.')
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (

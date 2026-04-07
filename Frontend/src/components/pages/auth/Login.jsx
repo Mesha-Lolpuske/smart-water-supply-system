@@ -1,20 +1,49 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Mail, Lock, Eye, EyeOff } from 'lucide-react'
+import { useAuth } from '../../hooks/useAuth'
 
 function LoginPage() {
   const navigate = useNavigate()
+  const { login } = useAuth()
   const [showPassword, setShowPassword] = useState(false)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
+  
   const [formData, setFormData] = useState({
     email: '',
     password: ''
   })
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
-    // Will handle login API call later
-    console.log('Login:', formData)
-    navigate('/dashboard')
+    setLoading(true)
+    setError('')
+    
+    console.log('🚀 Logging in...')
+   const result = await login(formData.email, formData.password)
+    
+    console.log('📡 Response:', result)
+    
+    if (result.success) {
+      console.log('✅ Login successful!')
+      console.log('User:', result.data.user)
+      
+      const userRole = result.data.user.role
+      
+      if (userRole === 'admin') {
+        console.log('→ Redirecting to Admin Dashboard')
+        navigate('/admin/dashboard')
+      } else {
+        console.log('→ Redirecting to User Dashboard')
+        navigate('/dashboard')
+      }
+    } else {
+      console.error('❌ Login failed:', result.error)
+      setError(result.error)
+    }
+    
+    setLoading(false)
   }
 
   return (
@@ -44,6 +73,14 @@ function LoginPage() {
           {/* Form Card */}
           <div className="p-8 border-2 rounded-2xl bg-gradient-to-br from-blue-800/80 to-blue-900/80 border-sky-400/30 backdrop-blur">
             <form onSubmit={handleSubmit} className="space-y-6">
+              
+              {/* ✅ ERROR MESSAGE */}
+              {error && (
+                <div className="p-3 text-sm text-red-100 border rounded-lg bg-red-500/20 border-red-400/30">
+                  {error}
+                </div>
+              )}
+
               {/* Email */}
               <div>
                 <label className="block mb-2 text-sm font-medium text-sky-300">
@@ -108,9 +145,10 @@ function LoginPage() {
               {/* Submit Button */}
               <button
                 type="submit"
-                className="w-full py-3 font-bold transition-all duration-300 rounded-lg text-blue-950 bg-gradient-to-r from-sky-300 to-sky-200 hover:shadow-2xl hover:shadow-sky-400/50"
+                disabled={loading}
+                className="w-full py-3 font-bold transition-all duration-300 rounded-lg text-blue-950 bg-gradient-to-r from-sky-300 to-sky-200 hover:shadow-2xl hover:shadow-sky-400/50 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Sign In
+                {loading ? 'Signing In...' : 'Sign In'}
               </button>
             </form>
 

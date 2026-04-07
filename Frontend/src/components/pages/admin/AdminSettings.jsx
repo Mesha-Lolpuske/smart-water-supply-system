@@ -1,6 +1,7 @@
 import DashboardLayout from '../../layout/DashboardLayout'
 import { Settings, Bell, Shield, Database, Save } from 'lucide-react'
 import { useState } from 'react'
+import { toast } from 'react-toastify'
 
 function AdminSettings() {
   const [settings, setSettings] = useState({
@@ -122,7 +123,7 @@ function AdminSettings() {
 
         {/* Save Button */}
         <button
-          onClick={() => alert('Settings saved!')}
+          onClick={() => toast.success('Settings saved!')}
           className="flex items-center justify-center w-full gap-2 px-6 py-3 font-semibold text-white transition-all rounded-lg bg-gradient-to-r from-sky-500 to-blue-600 hover:shadow-lg"
         >
           <Save size={20} />

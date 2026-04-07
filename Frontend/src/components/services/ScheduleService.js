@@ -2,28 +2,52 @@ import api from './api'
 
 export const scheduleService = {
   // Get all schedules
-  getAllSchedules: (filters = {}) => api.get('/schedules', { params: filters }),
+  getAllSchedules: async (filters = {}) => {
+    const response = await api.get('/schedules', { params: filters });
+    return response.data;
+  },
   
   // Get single schedule
-  getScheduleById: (id) => api.get(`/schedules/${id}`),
+  getScheduleById: async (id) => {
+    const response = await api.get(`/schedules/${id}`);
+    return response.data;
+  },
   
   // Create schedule
-  createSchedule: (scheduleData) => api.post('/schedules', scheduleData),
+  createSchedule: async (scheduleData) => {
+    const response = await api.post('/schedules', scheduleData);
+    return response.data;
+  },
   
   // Update schedule
-  updateSchedule: (id, scheduleData) => api.put(`/schedules/${id}`, scheduleData),
+  updateSchedule: async (id, scheduleData) => {
+    const response = await api.put(`/schedules/${id}`, scheduleData);
+    return response.data;
+  },
   
   // Delete schedule
-  deleteSchedule: (id) => api.delete(`/schedules/${id}`),
+  deleteSchedule: async (id) => {
+    const response = await api.delete(`/schedules/${id}`);
+    return response.data;
+  },
   
   // Get schedules by zone
-  getSchedulesByZone: (zone) => api.get(`/schedules/zone/${zone}`),
+  getSchedulesByZone: async (zone) => {
+    const response = await api.get(`/schedules/zone/${zone}`);
+    return response.data;
+  },
   
   // Publish schedule
-  publishSchedule: (id) => api.patch(`/schedules/${id}/publish`),
+  publishSchedule: async (id) => {
+    const response = await api.patch(`/schedules/${id}/publish`);
+    return response.data;
+  },
   
   // Get active schedules
-  getActiveSchedules: () => api.get('/schedules/active'),
+  getActiveSchedules: async () => {
+    const response = await api.get('/schedules/active');
+    return response.data;
+  },
 }
 
 export default scheduleService

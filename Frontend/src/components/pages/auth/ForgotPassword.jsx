@@ -1,25 +1,38 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Mail, ArrowLeft } from 'lucide-react'
+import authService from '../../services/authService'
+import { toast } from 'react-toastify'
 
 function ForgotPasswordPage() {
   const navigate = useNavigate()
   const [email, setEmail] = useState('')
   const [isSubmitted, setIsSubmitted] = useState(false)
+  const [loading, setLoading] = useState(false)
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
+    setLoading(true)
     
-    // Will handle forgot password API call later
-    console.log('Request password reset for:', email)
-    
-    // Show success message
-    setIsSubmitted(true)
-    
-    // Navigate to reset password page after 2 seconds
-    setTimeout(() => {
-      navigate('/reset-password', { state: { email } })
-    }, 2000)
+    try {
+      const result = await authService.requestPasswordReset(email)
+      
+      if (result.success) {
+        setIsSubmitted(true)
+        toast.success('Reset code sent to your email!')
+        
+        // Navigate to reset password page after 3 seconds
+        setTimeout(() => {
+          navigate('/reset-password', { state: { email } })
+        }, 3000)
+      } else {
+        toast.error(result.error)
+      }
+    } catch {
+      toast.error('Something went wrong. Please try again.')
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
@@ -73,9 +86,10 @@ function ForgotPasswordPage() {
                 {/* Submit Button */}
                 <button
                   type="submit"
-                  className="w-full py-3 font-bold transition-all duration-300 rounded-lg text-blue-950 bg-gradient-to-r from-sky-300 to-sky-200 hover:shadow-2xl hover:shadow-sky-400/50"
+                  disabled={loading}
+                  className="w-full py-3 font-bold transition-all duration-300 rounded-lg text-blue-950 bg-gradient-to-r from-sky-300 to-sky-200 hover:shadow-2xl hover:shadow-sky-400/50 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  Send Reset Code
+                  {loading ? 'Sending Code...' : 'Send Reset Code'}
                 </button>
               </form>
             ) : (

@@ -15,6 +15,8 @@ import {
   Facebook,
   Twitter,
   Linkedin,
+  Droplets,
+  ArrowRight,
 } from "lucide-react";
 
 function Homepage() {
@@ -37,20 +39,6 @@ function Homepage() {
       title: "Address",
       value: "AquaTrack HQ",
       sub: "123 Water Street, Tech City, TC 12345",
-    },
-  ];
-  const taglineItems = [
-    {
-      icon: Eye,
-      label: "Monitor",
-    },
-    {
-      icon: BarChart3,
-      label: "Analyze",
-    },
-    {
-      icon: Zap,
-      label: "Optimize",
     },
   ];
 
@@ -117,7 +105,7 @@ function Homepage() {
             className="flex items-center gap-4 transition-transform duration-300 hover:scale-105"
           >
             <div className="flex items-center justify-center transition-transform duration-300 rounded-full shadow-lg w-14 h-14 bg-gradient-to-br from-sky-300 to-sky-400 shadow-sky-400/50 hover:scale-110">
-              <span className="text-2xl">💧</span>
+              <Droplets className="text-blue-900" size={28} />
             </div>
             <div>
               <span className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-sky-300 to-sky-200">
@@ -162,79 +150,71 @@ function Homepage() {
       {/* Hero Section */}
       <div
         id="home"
-        className="relative z-10 flex items-center justify-center px-4 py-40 overflow-hidden bg-gradient-to-b from-blue-950 via-blue-900 to-blue-800"
+        className="relative z-10 min-h-[90vh] flex items-center bg-blue-950 overflow-hidden"
       >
-        <div className="absolute inset-0 opacity-25">
-          <svg
-            className="w-full h-full"
-            viewBox="0 0 1200 120"
-            preserveAspectRatio="none"
-          >
-            <path
-              d="M0,50 Q300,0 600,50 T1200,50 L1200,120 L0,120 Z"
-              fill="currentColor"
-              className="text-sky-300 animate-pulse"
-            ></path>
-            <path
-              d="M0,60 Q300,30 600,60 T1200,60 L1200,120 L0,120 Z"
-              fill="currentColor"
-              className="text-sky-200 animate-bounce"
-              style={{ animationDelay: "0.2s" }}
-            ></path>
-          </svg>
-        </div>
+        {/* Abstract Background Element */}
+        <div className="absolute top-0 right-0 w-1/2 h-full bg-gradient-to-l from-sky-500/5 to-transparent"></div>
+        
+        <div className="relative z-10 grid items-center w-full max-w-7xl px-8 mx-auto gap-12 lg:grid-cols-2 py-20">
+          <div className="space-y-8">
+            <div className="inline-flex items-center gap-2 px-3 py-1 text-xs font-bold tracking-widest uppercase border rounded-lg text-sky-400 border-sky-400/20 bg-sky-400/5">
+              <Droplets size={14} />
+              <span>Enterprise Solutions</span>
+            </div>
+            
+            <h1 className="text-6xl font-black leading-[1.1] text-white lg:text-7xl">
+              Smart Water <br />
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-sky-300 to-blue-400">
+                Infrastructure.
+              </span>
+            </h1>
 
-        <div className="relative z-10 max-w-4xl text-center">
-          <div className="mb-8 animate-pulse">
-            <div className="inline-flex items-center justify-center rounded-full shadow-2xl w-28 h-28 border-3 border-sky-300 bg-gradient-to-br from-blue-900 to-blue-800 backdrop-blur-md shadow-sky-400/40">
-              <span className="text-7xl">💧</span>
+            <p className="max-w-xl text-lg font-medium leading-relaxed text-blue-100/60 md:text-xl">
+              Streamline distribution, monitor real-time health, and empower 
+              communities with our unified water management platform.
+            </p>
+
+            <div className="flex flex-col gap-4 sm:flex-row pt-4">
+              <button 
+                onClick={() => navigate('/login')} 
+                className="flex items-center justify-center gap-2 px-8 py-4 font-bold transition-all duration-300 rounded-xl text-blue-950 bg-sky-300 hover:bg-sky-200 hover:-translate-y-1 shadow-lg shadow-sky-400/20"
+              >
+                Get Started
+                <ArrowRight size={20} />
+              </button>
+              <button className="px-8 py-4 font-bold transition-all duration-300 bg-white/5 border-2 rounded-xl text-white border-white/10 hover:bg-white/10">
+                View Demo
+              </button>
             </div>
           </div>
-          <h1 className="mb-6 text-5xl font-bold leading-tight tracking-tight text-white md:text-7xl">
-            Smart Water Supply
-            <br />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-sky-300 to-sky-200">
-              Management System
-            </span>
-          </h1>
-          <p className="flex flex-wrap justify-center max-w-2xl gap-6 mx-auto mb-8 text-lg font-medium leading-relaxed text-blue-100 md:text-xl">
-            {taglineItems.map((item, index) => {
-              const Icon = item.icon;
-              return (
-                <span key={index} className="flex items-center gap-2">
-                  <Icon size={20} />
-                  {item.label}
-                </span>
-              );
-            })}
-          </p>
 
-          <p className="max-w-2xl mx-auto mb-16 text-lg leading-relaxed text-blue-200">
-            Real-time water distribution tracking, instant issue reporting, and
-            intelligent analytics to ensure your community has reliable, safe
-            water supply 24/7
-          </p>
-          <div className="flex flex-col items-center justify-center gap-4 mb-20 sm:flex-row">
-            <button onClick={() => navigate('/login')} className="px-8 py-4 font-bold transition-all duration-300 transform rounded-lg text-blue-950 bg-gradient-to-r from-sky-300 to-sky-200 hover:shadow-2xl hover:shadow-sky-400/60 hover:scale-110 active:scale-95">
-              Get Started Now
-            </button>
-            <button className="px-8 py-4 font-bold transition-all duration-300 bg-transparent border-2 rounded-lg text-sky-300 border-sky-300 hover:bg-sky-300/10 hover:shadow-lg hover:shadow-sky-400/40">
-              Watch Demo
-            </button>
-          </div>
-          <div className="grid grid-cols-3 gap-6 px-4 mt-12">
-            <div className="p-4 transition border bg-white/5 backdrop-blur-sm border-sky-400/20 rounded-xl hover:border-sky-400/50">
-              <p className="text-3xl font-bold text-sky-300">24/7</p>
-              <p className="text-sm text-blue-200">Real-time Monitoring</p>
+          {/* Right Side: Clean Feature Stack */}
+          <div className="relative">
+            <div className="space-y-6 lg:ml-auto lg:max-w-md">
+              {[
+                { icon: Eye, title: "Real-time Monitoring", desc: "Live tracking of system flow and pressure.", color: "text-sky-400" },
+                { icon: Bell, title: "Smart Alerts", desc: "Automated notifications for supply changes.", color: "text-purple-400" },
+                { icon: ShieldCheck, title: "Secure Analytics", desc: "Enterprise-grade data encryption and insights.", color: "text-emerald-400" },
+              ].map((item, i) => (
+                <div 
+                  key={i} 
+                  className="group p-6 transition-all duration-300 border bg-white/5 backdrop-blur-md border-white/10 rounded-2xl hover:bg-white/10 hover:border-white/20 hover:scale-[1.02]"
+                >
+                  <div className="flex items-start gap-4">
+                    <div className={`p-3 rounded-xl bg-white/5 ${item.color}`}>
+                      <item.icon size={24} />
+                    </div>
+                    <div>
+                      <h3 className="font-bold text-white mb-1">{item.title}</h3>
+                      <p className="text-sm text-blue-100/50 leading-relaxed">{item.desc}</p>
+                    </div>
+                  </div>
+                </div>
+              ))}
             </div>
-            <div className="p-4 transition border bg-white/5 backdrop-blur-sm border-sky-400/20 rounded-xl hover:border-sky-400/50">
-              <p className="text-3xl font-bold text-sky-300">100%</p>
-              <p className="text-sm text-blue-200">Uptime Reliable</p>
-            </div>
-            <div className="p-4 transition border bg-white/5 backdrop-blur-sm border-sky-400/20 rounded-xl hover:border-sky-400/50">
-              <p className="text-3xl font-bold text-sky-300">1000+</p>
-              <p className="text-sm text-blue-200">Communities Served</p>
-            </div>
+            
+            {/* Decorative Glow */}
+            <div className="absolute -z-10 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full bg-sky-500/10 blur-[100px]"></div>
           </div>
         </div>
       </div>

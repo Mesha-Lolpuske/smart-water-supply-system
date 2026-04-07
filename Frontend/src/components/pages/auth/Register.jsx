@@ -1,11 +1,16 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Mail, Lock, User, MapPin, Eye, EyeOff } from 'lucide-react'
-
+import authService from '../../services/authService'
+import { validatePassword } from '../../utils/validation'
+import { PasswordStrengthBar } from '../../utils/PasswordStrengthBar'
 function RegisterPage() {
   const navigate = useNavigate()
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
+  
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -14,30 +19,53 @@ function RegisterPage() {
     confirmPassword: ''
   })
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
+    setLoading(true)
+    setError('')
     
-    // Basic validation
     if (formData.password !== formData.confirmPassword) {
-      alert('Passwords do not match!')
+      setError('Passwords do not match!')
+      setLoading(false)
+      return
+    }
+
+    const passwordError = validatePassword(formData.password)
+    if (passwordError) {
+      setError(passwordError)
+      setLoading(false)
       return
     }
     
-    if (formData.password.length < 6) {
-      alert('Password must be at least 6 characters!')
-      return
+    console.log('🚀 Registering user...')
+    
+    const result = await authService.register({
+      name: formData.name,
+      email: formData.email,
+      password: formData.password,
+      address: formData.address
+    })
+    
+    console.log('📡 Response:', result)
+    
+    if (result.success) {
+      console.log('✅ Success! Check your email for OTP')
+      navigate('/verify-otp', { 
+        state: { 
+          userId: result.data.userId,
+          email: formData.email
+        } 
+      })
+    } else {
+      console.error('❌ Error:', result.error)
+      setError(result.error)
     }
     
-    // Will handle register API call later
-    console.log('Register:', formData)
-    
-    // Navigate to OTP verification
-    navigate('/verify-otp', { state: { email: formData.email } })
+    setLoading(false)
   }
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-blue-950 via-blue-900 to-blue-800">
-      {/* Back to Home */}
       <div className="px-8 py-5">
         <button
           onClick={() => navigate('/')}
@@ -47,10 +75,8 @@ function RegisterPage() {
         </button>
       </div>
 
-      {/* Register Form */}
       <div className="flex items-center justify-center px-4 py-8">
         <div className="w-full max-w-md">
-          {/* Logo */}
           <div className="mb-8 text-center">
             <div className="inline-flex items-center justify-center w-20 h-20 mb-4 rounded-full shadow-lg bg-gradient-to-br from-sky-300 to-sky-400 shadow-sky-400/50">
               <span className="text-4xl">💧</span>
@@ -59,14 +85,17 @@ function RegisterPage() {
             <p className="text-blue-200">Join AquaTrack community today</p>
           </div>
 
-          {/* Form Card */}
           <div className="p-8 border-2 rounded-2xl bg-gradient-to-br from-blue-800/80 to-blue-900/80 border-sky-400/30 backdrop-blur">
             <form onSubmit={handleSubmit} className="space-y-5">
-              {/* Full Name */}
+              
+              {error && (
+                <div className="p-3 text-sm text-red-100 border rounded-lg bg-red-500/20 border-red-400/30">
+                  {error}
+                </div>
+              )}
+
               <div>
-                <label className="block mb-2 text-sm font-medium text-sky-300">
-                  Full Name
-                </label>
+                <label className="block mb-2 text-sm font-medium text-sky-300">Full Name</label>
                 <div className="relative">
                   <User className="absolute text-blue-300 left-3 top-3.5" size={20} />
                   <input
@@ -80,11 +109,8 @@ function RegisterPage() {
                 </div>
               </div>
 
-              {/* Email */}
               <div>
-                <label className="block mb-2 text-sm font-medium text-sky-300">
-                  Email Address
-                </label>
+                <label className="block mb-2 text-sm font-medium text-sky-300">Email Address</label>
                 <div className="relative">
                   <Mail className="absolute text-blue-300 left-3 top-3.5" size={20} />
                   <input
@@ -98,11 +124,8 @@ function RegisterPage() {
                 </div>
               </div>
 
-              {/* Address */}
               <div>
-                <label className="block mb-2 text-sm font-medium text-sky-300">
-                  Address
-                </label>
+                <label className="block mb-2 text-sm font-medium text-sky-300">Address</label>
                 <div className="relative">
                   <MapPin className="absolute text-blue-300 left-3 top-3.5" size={20} />
                   <input
@@ -116,11 +139,8 @@ function RegisterPage() {
                 </div>
               </div>
 
-              {/* Password */}
               <div>
-                <label className="block mb-2 text-sm font-medium text-sky-300">
-                  Password
-                </label>
+                <label className="block mb-2 text-sm font-medium text-sky-300">Password</label>
                 <div className="relative">
                   <Lock className="absolute text-blue-300 left-3 top-3.5" size={20} />
                   <input
@@ -128,7 +148,7 @@ function RegisterPage() {
                     required
                     value={formData.password}
                     onChange={(e) => setFormData({...formData, password: e.target.value})}
-                    placeholder="At least 6 characters"
+                    placeholder="At least 8 characters"
                     className="w-full py-3 pl-10 pr-12 text-white placeholder-blue-300 transition border rounded-lg bg-white/10 border-sky-400/30 focus:outline-none focus:border-sky-400"
                   />
                   <button
@@ -139,13 +159,11 @@ function RegisterPage() {
                     {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                   </button>
                 </div>
+                <PasswordStrengthBar password={formData.password} />
               </div>
 
-              {/* Confirm Password */}
               <div>
-                <label className="block mb-2 text-sm font-medium text-sky-300">
-                  Confirm Password
-                </label>
+                <label className="block mb-2 text-sm font-medium text-sky-300">Confirm Password</label>
                 <div className="relative">
                   <Lock className="absolute text-blue-300 left-3 top-3.5" size={20} />
                   <input
@@ -164,9 +182,13 @@ function RegisterPage() {
                     {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                   </button>
                 </div>
+                {formData.confirmPassword && (
+                  formData.password === formData.confirmPassword
+                    ? <p className="mt-1.5 text-xs text-emerald-400">✓ Passwords match</p>
+                    : <p className="mt-1.5 text-xs text-red-400">✗ Passwords do not match</p>
+                )}
               </div>
 
-              {/* Terms & Conditions */}
               <div className="flex items-start gap-2">
                 <input
                   type="checkbox"
@@ -185,23 +207,21 @@ function RegisterPage() {
                 </label>
               </div>
 
-              {/* Submit Button */}
               <button
                 type="submit"
-                className="w-full py-3 font-bold transition-all duration-300 rounded-lg text-blue-950 bg-gradient-to-r from-sky-300 to-sky-200 hover:shadow-2xl hover:shadow-sky-400/50"
+                disabled={loading}
+                className="w-full py-3 font-bold transition-all duration-300 rounded-lg text-blue-950 bg-gradient-to-r from-sky-300 to-sky-200 hover:shadow-2xl hover:shadow-sky-400/50 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Create Account
+                {loading ? 'Creating Account...' : 'Create Account'}
               </button>
             </form>
 
-            {/* Divider */}
             <div className="flex items-center gap-4 my-6">
               <div className="flex-1 h-px bg-sky-400/30"></div>
               <span className="text-sm text-blue-300">or</span>
               <div className="flex-1 h-px bg-sky-400/30"></div>
             </div>
 
-            {/* Login Link */}
             <div className="text-center">
               <p className="text-sm text-blue-200">
                 Already have an account?{' '}
