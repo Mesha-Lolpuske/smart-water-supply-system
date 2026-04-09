@@ -58,6 +58,13 @@ import CreateNotification from "./components/pages/notifications/CreateNotificat
 // Admin-specific pages
 import AdminSettings from "./components/pages/admin/AdminSettings";
 
+// New Analytics Report Pages
+import UserRegistrationTrends from "./components/pages/System reports/UserRegistrationTrends";
+import IncidentSeverityDistribution from "./components/pages/System reports/IncidentSeverityDistribution";
+import ScheduleDistributionByLocation from "./components/pages/System reports/ScheduleDistributionByLocation";
+import AnnouncementCategories from "./components/pages/System reports/AnnouncementCategories";
+import InteractiveGISMap from "./components/pages/maps/InteractiveGISMap";
+
 
 
 // Dashboard Route - Auto-redirect based on role
@@ -302,6 +309,47 @@ function App() {
               element={
                 <AdminRoute>
                   <ReportDetails />
+                </AdminRoute>
+              }
+            />
+            {/* Admin - Analytics Reports */}
+            <Route
+              path="/admin/reports/user-registration-trends"
+              element={
+                <AdminRoute>
+                  <UserRegistrationTrends />
+                </AdminRoute>
+              }
+            />
+            <Route
+              path="/admin/reports/incident-severity-distribution"
+              element={
+                <AdminRoute>
+                  <IncidentSeverityDistribution />
+                </AdminRoute>
+              }
+            />
+            <Route
+              path="/admin/reports/schedule-distribution"
+              element={
+                <AdminRoute>
+                  <ScheduleDistributionByLocation />
+                </AdminRoute>
+              }
+            />
+            <Route
+              path="/admin/reports/announcement-categories"
+              element={
+                <AdminRoute>
+                  <AnnouncementCategories />
+                </AdminRoute>
+              }
+            />
+            <Route
+              path="/admin/reports/interactive-gis-mapping"
+              element={
+                <AdminRoute>
+                  <InteractiveGISMap />
                 </AdminRoute>
               }
             />

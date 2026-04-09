@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
-import { Mail, RefreshCw } from 'lucide-react'
+import { Mail, RefreshCw, Phone, MessageSquare } from 'lucide-react'
 import authService from '../../services/authService'
 
 function VerifyOTPPage() {
@@ -8,11 +8,14 @@ function VerifyOTPPage() {
   const location = useLocation()
   const email = location.state?.email || ''
   const userId = location.state?.userId || ''
+  const phone = location.state?.phone || ''
 
   const [otp, setOtp] = useState(['', '', '', '', '', ''])
   const [timer, setTimer] = useState(600)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [info, setInfo] = useState('')
+  const [verificationMethod, setVerificationMethod] = useState('email')
 
   useEffect(() => {
     if (timer <= 0) return
@@ -69,6 +72,7 @@ function VerifyOTPPage() {
     e.preventDefault()
     setLoading(true)
     setError('')
+    setInfo('')
     
     const otpCode = otp.join('')
     
@@ -80,16 +84,34 @@ function VerifyOTPPage() {
 
     console.log('🚀 Verifying OTP...')
     
-    const result = await authService.verifyOTP(userId, otpCode)
+    const result = await authService.verifyOTP(userId, otpCode, verificationMethod)
     
     console.log('📡 Response:', result)
     
     if (result.success) {
-      console.log('✅ OTP verified! Redirecting to login...')
-      navigate('/login')
+      if (result.data.fullyVerified) {
+        console.log('✅ Account fully verified! Redirecting to login...')
+        navigate('/login')
+      } else {
+        const remaining = result.data.emailVerified ? 'SMS' : 'email'
+        const message = result.data.message || `Verified ${verificationMethod}. Please verify ${remaining} next.`
+        setInfo(message)
+        setVerificationMethod(remaining.toLowerCase())
+        setOtp(['', '', '', '', '', ''])
+        document.getElementById('otp-0')?.focus()
+      }
     } else {
       console.error('❌ Error:', result.error)
-      setError(result.error)
+
+      // Provide more specific error messages
+      let errorMessage = result.error
+      if (verificationMethod === 'sms') {
+        if (errorMessage.includes('SMS') || errorMessage.includes('provider') || errorMessage.includes('deliver')) {
+          errorMessage = 'SMS verification failed — please check your phone number or try resending the code.'
+        }
+      }
+
+      setError(errorMessage)
       setOtp(['', '', '', '', '', ''])
       document.getElementById('otp-0')?.focus()
     }
@@ -99,20 +121,29 @@ function VerifyOTPPage() {
 
   const handleResend = async () => {
     setError('')
+    setInfo('')
     console.log('🚀 Resending OTP...')
-    
-    const result = await authService.resendOTP(email)
-    
+
+    const result = await authService.resendOTP(userId, email, verificationMethod)
+
     console.log('📡 Response:', result)
-    
+
     if (result.success) {
-      console.log('✅ OTP resent! Check your email')
+      console.log('✅ OTP resent!')
+      setInfo(result.data.message || 'OTP resent successfully.')
       setTimer(600)
-      setOtp(['', '', '', '', '', ''])
-      document.getElementById('otp-0')?.focus()
     } else {
-      console.error('❌ Error:', result.error)
-      setError(result.error)
+      console.error('❌ Resend failed:', result.error)
+
+      // Provide more specific error messages for SMS failures
+      let errorMessage = result.error
+      if (verificationMethod === 'sms' || verificationMethod === 'both') {
+        if (errorMessage.includes('SMS') || errorMessage.includes('provider') || errorMessage.includes('deliver')) {
+          errorMessage = 'SMS was not delivered — please check your phone number or use production credentials.'
+        }
+      }
+
+      setError(errorMessage)
     }
   }
 
@@ -131,11 +162,50 @@ function VerifyOTPPage() {
         <div className="w-full max-w-md">
           <div className="mb-8 text-center">
             <div className="inline-flex items-center justify-center w-20 h-20 mb-4 rounded-full shadow-lg bg-gradient-to-br from-sky-300 to-sky-400 shadow-sky-400/50">
-              <Mail className="text-blue-950" size={32} />
+              {verificationMethod === 'email' ? (
+                <Mail className="text-blue-950" size={32} />
+              ) : (
+                <MessageSquare className="text-blue-950" size={32} />
+              )}
             </div>
-            <h1 className="mb-2 text-3xl font-bold text-white">Verify Your Email</h1>
+            <h1 className="mb-2 text-3xl font-bold text-white">
+              Verify Your {verificationMethod === 'email' ? 'Email' : 'Phone'}
+            </h1>
             <p className="text-blue-200">We've sent a 6-digit code to</p>
-            <p className="font-semibold text-sky-300">{email}</p>
+            <p className="font-semibold text-sky-300">
+              {verificationMethod === 'email' ? email : phone}
+            </p>
+            {verificationMethod === 'sms' && (
+              <p className="text-xs text-orange-300 mt-2">
+                Note: SMS may not deliver in sandbox mode. Use production credentials for live SMS.
+              </p>
+            )}
+
+            {/* Method Selection */}
+            <div className="flex justify-center gap-2 mt-4">
+              <button
+                onClick={() => setVerificationMethod('email')}
+                className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition ${
+                  verificationMethod === 'email'
+                    ? 'bg-sky-500 text-white'
+                    : 'bg-white/10 text-blue-200 hover:bg-white/20'
+                }`}
+              >
+                <Mail size={16} />
+                Email
+              </button>
+              <button
+                onClick={() => setVerificationMethod('sms')}
+                className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition ${
+                  verificationMethod === 'sms'
+                    ? 'bg-sky-500 text-white'
+                    : 'bg-white/10 text-blue-200 hover:bg-white/20'
+                }`}
+              >
+                <Phone size={16} />
+                SMS
+              </button>
+            </div>
           </div>
 
           <div className="p-8 border-2 rounded-2xl bg-gradient-to-br from-blue-800/80 to-blue-900/80 border-sky-400/30 backdrop-blur">
@@ -144,6 +214,12 @@ function VerifyOTPPage() {
               {error && (
                 <div className="p-3 text-sm text-red-100 border rounded-lg bg-red-500/20 border-red-400/30">
                   {error}
+                </div>
+              )}
+
+              {info && (
+                <div className="p-3 text-sm text-green-100 border rounded-lg bg-emerald-500/20 border-emerald-400/30">
+                  {info}
                 </div>
               )}
 
@@ -201,13 +277,16 @@ function VerifyOTPPage() {
                 disabled={otp.join('').length !== 6 || loading}
                 className="w-full py-3 font-bold transition-all duration-300 rounded-lg text-blue-950 bg-gradient-to-r from-sky-300 to-sky-200 hover:shadow-2xl hover:shadow-sky-400/50 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {loading ? 'Verifying...' : 'Verify Email'}
+                {loading ? 'Verifying...' : `Verify ${verificationMethod === 'email' ? 'Email' : 'SMS'}`}
               </button>
             </form>
 
             <div className="mt-6 text-center">
               <p className="text-xs text-blue-300">
-                Check your spam folder if you don't see the email
+                {verificationMethod === 'email'
+                  ? "Check your spam folder if you don't see the email"
+                  : "If you don't receive the SMS, check your phone number or try email verification"
+                }
               </p>
             </div>
           </div>

@@ -14,10 +14,10 @@ const authService = {
     }
   },
 
-  // Verify OTP — sends userId + otp
-  verifyOTP: async (userId, otp) => {
+  // Verify OTP — sends userId + otp + method
+  verifyOTP: async (userId, otp, method = 'email') => {
     try {
-      const response = await api.post('/auth/verify-otp', { userId, otp })
+      const response = await api.post('/auth/verify-otp', { userId, otp, method })
       
       if (response.data.token) {
         localStorage.setItem('token', response.data.token)
@@ -33,15 +33,32 @@ const authService = {
     }
   },
 
-  resendOTP: async (email) => {
+  resendOTP: async (userId, email, method = 'both') => {
     try {
-      const response = await api.post('/auth/resend-otp', { email })
+      const response = await api.post('/auth/resend-otp', { userId, email, method })
       return { success: true, data: response.data }
     } catch (error) {
       console.error('Resend OTP error:', error)
-      return { 
-        success: false, 
-        error: error.response?.data?.message || 'Failed to resend OTP. Please try again.' 
+
+      // Handle specific error messages for SMS/email failures
+      const errorData = error.response?.data
+      let errorMessage = errorData?.message || 'Failed to resend OTP. Please try again.'
+
+      if (errorData?.errors && Array.isArray(errorData.errors)) {
+        // Use the specific error for the requested method
+        const relevantError = errorData.errors.find(err =>
+          method === 'both' ||
+          (method === 'email' && err.includes('Email:')) ||
+          (method === 'sms' && err.includes('SMS:'))
+        )
+        if (relevantError) {
+          errorMessage = relevantError.replace(/^(Email|SMS):\s*/, '')
+        }
+      }
+
+      return {
+        success: false,
+        error: errorMessage
       }
     }
   },

@@ -16,10 +16,10 @@ import {
   ShieldCheck,
   HelpCircle,
   BarChart3,    // ← ADDED
-  Droplets,     // ← ADDED
   UserCheck,    // ← ADDED
   Wrench,       // ← ADDED
-  TestTube      // ← ADDED
+  TestTube,     // ← ADDED
+  Map           // ← ADDED
 } from 'lucide-react'
 
 function AdminSidebar() {
@@ -35,13 +35,13 @@ function AdminSidebar() {
     { icon: Megaphone, label: 'Announcements', path: '/admin/announcements' },
   ]
 
-  // ✅ NEW: Report menu items
-  const reportMenuItems = [
-    { icon: Users, label: 'User Analytics', path: '/admin/reports/user-analytics' },
-    { icon: Wrench, label: 'Incident Resolution', path: '/admin/reports/incident-resolution' },
-    { icon: Calendar, label: 'Schedule Management', path: '/admin/reports/schedule-management' },
-    { icon: Megaphone, label: 'Announcement Engagement', path: '/admin/reports/announcement-engagement' },
-    { icon: Bell, label: 'Notification Effectiveness', path: '/admin/reports/notification-effectiveness' },
+  // ✅ NEW: System Reports menu items
+  const systemReportItems = [
+    { icon: UserCheck, label: 'User Registration Trends', path: '/admin/reports/user-registration-trends' },
+    { icon: TestTube, label: 'Incident Severity Analysis', path: '/admin/reports/incident-severity-distribution' },
+    { icon: Calendar, label: 'Schedule Distribution', path: '/admin/reports/schedule-distribution' },
+    { icon: Megaphone, label: 'Announcement Categories', path: '/admin/reports/announcement-categories' },
+    { icon: Map, label: 'Interactive GIS Mapping', path: '/admin/reports/interactive-gis-mapping' },
   ]
 
   const bottomItems = [
@@ -103,11 +103,11 @@ function AdminSidebar() {
             </nav>
           </div>
 
-          {/* ✅ NEW: Analytics Section */}
+          {/* System Reports Section */}
           <div>
-            <p className="px-4 mb-4 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Analytics</p>
+            <p className="px-4 mb-4 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">System Reports</p>
             <nav className="space-y-1.5">
-              {reportMenuItems.map((item) => (
+              {systemReportItems.map((item) => (
                 <button
                   key={item.path}
                   onClick={() => navigate(item.path)}

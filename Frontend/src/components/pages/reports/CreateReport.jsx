@@ -50,7 +50,7 @@ function CreateReport() {
         <p className="mb-8 text-slate-600">Help us improve service by reporting problems immediately</p>
 
         {error && (
-          <div className="p-4 mb-6 bg-red-50 text-red-600 border border-red-100 rounded-lg font-bold">
+          <div className="p-4 mb-6 font-bold text-red-600 border border-red-100 rounded-lg bg-red-50">
             {error}
           </div>
         )}

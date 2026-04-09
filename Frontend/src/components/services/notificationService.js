@@ -56,24 +56,24 @@ export const notificationService = {
     }
   },
 
-  // Create individual notification (Admin)
-  createNotification: async (data) => {
-    try {
-      const response = await api.post('/notifications', data);
-      return response.data;
-    } catch (error) {
-      console.error('Error creating notification:', error);
-      throw error;
-    }
-  },
-
-  // Broadcast notification to all users (Admin)
+  // Broadcast notification to all users (Admin) - supports SMS
   broadcastNotification: async (data) => {
     try {
       const response = await api.post('/notifications/broadcast', data);
       return response.data;
     } catch (error) {
       console.error('Error broadcasting notification:', error);
+      throw error;
+    }
+  },
+
+  // Create individual notification (Admin) - supports SMS
+  createNotification: async (data) => {
+    try {
+      const response = await api.post('/notifications', data);
+      return response.data;
+    } catch (error) {
+      console.error('Error creating notification:', error);
       throw error;
     }
   }

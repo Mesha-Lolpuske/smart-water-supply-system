@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Mail, Lock, User, MapPin, Eye, EyeOff } from 'lucide-react'
+import { Mail, Lock, User, MapPin, Eye, EyeOff, Phone } from 'lucide-react'
 import authService from '../../services/authService'
 import { validatePassword } from '../../utils/validation'
 import { PasswordStrengthBar } from '../../utils/PasswordStrengthBar'
@@ -14,6 +14,7 @@ function RegisterPage() {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
+    phone: '',
     address: '',
     password: '',
     confirmPassword: ''
@@ -42,6 +43,7 @@ function RegisterPage() {
     const result = await authService.register({
       name: formData.name,
       email: formData.email,
+      phone: formData.phone,
       password: formData.password,
       address: formData.address
     })
@@ -53,7 +55,8 @@ function RegisterPage() {
       navigate('/verify-otp', { 
         state: { 
           userId: result.data.userId,
-          email: formData.email
+          email: formData.email,
+          phone: formData.phone
         } 
       })
     } else {
@@ -122,6 +125,22 @@ function RegisterPage() {
                     className="w-full py-3 pl-10 pr-4 text-white placeholder-blue-300 transition border rounded-lg bg-white/10 border-sky-400/30 focus:outline-none focus:border-sky-400"
                   />
                 </div>
+              </div>
+
+              <div>
+                <label className="block mb-2 text-sm font-medium text-sky-300">Phone Number</label>
+                <div className="relative">
+                  <Phone className="absolute text-blue-300 left-3 top-3.5" size={20} />
+                  <input
+                    type="tel"
+                    required
+                    value={formData.phone}
+                    onChange={(e) => setFormData({...formData, phone: e.target.value})}
+                    placeholder="0712345678 or +254712345678"
+                    className="w-full py-3 pl-10 pr-4 text-white placeholder-blue-300 transition border rounded-lg bg-white/10 border-sky-400/30 focus:outline-none focus:border-sky-400"
+                  />
+                </div>
+                <p className="mt-1 text-xs text-blue-200">For urgent water alerts via SMS</p>
               </div>
 
               <div>
