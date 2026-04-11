@@ -30,19 +30,3 @@ Africa's Talking SMS API for alerts
 Interactive Maps (Leaflet/Google Maps)
 Authentication: JWT (JSON Web Tokens)
 Deployment: GitHub, Heroku/Vercel (optional)
-Project Structure
-smart-water-supply-system/
-├── backend/          # Backend Node.js/Express API
-│   ├── src/
-│   ├── node_modules/
-│   ├── package.json
-│   └── ...
-├── frontend/         # Frontend React application
-│   ├── src/
-│   ├── node_modules/
-│   ├── package.json
-│   └── ...
-├── README.md
-└── ...
-
-

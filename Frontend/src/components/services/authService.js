@@ -39,26 +39,9 @@ const authService = {
       return { success: true, data: response.data }
     } catch (error) {
       console.error('Resend OTP error:', error)
-
-      // Handle specific error messages for SMS/email failures
-      const errorData = error.response?.data
-      let errorMessage = errorData?.message || 'Failed to resend OTP. Please try again.'
-
-      if (errorData?.errors && Array.isArray(errorData.errors)) {
-        // Use the specific error for the requested method
-        const relevantError = errorData.errors.find(err =>
-          method === 'both' ||
-          (method === 'email' && err.includes('Email:')) ||
-          (method === 'sms' && err.includes('SMS:'))
-        )
-        if (relevantError) {
-          errorMessage = relevantError.replace(/^(Email|SMS):\s*/, '')
-        }
-      }
-
-      return {
-        success: false,
-        error: errorMessage
+      return { 
+        success: false, 
+        error: error.response?.data?.message || 'Failed to resend OTP. Please try again.' 
       }
     }
   },

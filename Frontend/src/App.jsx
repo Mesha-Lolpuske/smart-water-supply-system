@@ -57,6 +57,7 @@ import CreateNotification from "./components/pages/notifications/CreateNotificat
 
 // Admin-specific pages
 import AdminSettings from "./components/pages/admin/AdminSettings";
+import UserManagement from "./components/pages/admin/UserManagement";
 
 // New Analytics Report Pages
 import UserRegistrationTrends from "./components/pages/System reports/UserRegistrationTrends";
@@ -255,6 +256,14 @@ function App() {
               element={
                 <AdminRoute>
                   <AdminDashboard />
+                </AdminRoute>
+              }
+            />
+            <Route
+              path="/admin/users"
+              element={
+                <AdminRoute>
+                  <UserManagement />
                 </AdminRoute>
               }
             />
