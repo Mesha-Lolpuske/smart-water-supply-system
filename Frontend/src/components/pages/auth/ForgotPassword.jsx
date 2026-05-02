@@ -19,7 +19,7 @@ function ForgotPasswordPage() {
       
       if (result.success) {
         setIsSubmitted(true)
-        toast.success('Reset code sent to your email!')
+        toast.success('Reset code sent to your email and phone!')
         
         // Navigate to reset password page after 3 seconds
         setTimeout(() => {
@@ -100,7 +100,7 @@ function ForgotPasswordPage() {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                   </svg>
                 </div>
-                <h3 className="mb-2 text-xl font-bold text-white">Check Your Email!</h3>
+                <h3 className="mb-2 text-xl font-bold text-white">Check Your Email & Phone!</h3>
                 <p className="mb-4 text-blue-200">
                   We've sent a password reset code to
                 </p>

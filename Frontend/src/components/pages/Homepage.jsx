@@ -31,13 +31,13 @@ function Homepage() {
     {
       icon: Mail,
       title: "Email",
-      value: "support@aquatrack.com",
-      sub: "contact@aquatrack.com",
+      value: "support@majitrack.com",
+      sub: "contact@majitrack.com",
     },
     {
       icon: MapPin,
       title: "Address",
-      value: "AquaTrack HQ",
+      value: "MajiTrack HQ",
       sub: "123 Water Street, Tech City, TC 12345",
     },
   ];
@@ -109,7 +109,7 @@ function Homepage() {
             </div>
             <div>
               <span className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-sky-300 to-sky-200">
-                AquaTrack
+                MajiTrack
               </span>
               <p className="text-xs font-medium text-sky-300/80">
                 Smart Water Management
@@ -155,7 +155,7 @@ function Homepage() {
         {/* Abstract Background Element */}
         <div className="absolute top-0 right-0 w-1/2 h-full bg-gradient-to-l from-sky-500/5 to-transparent"></div>
         
-        <div className="relative z-10 grid items-center w-full max-w-7xl px-8 mx-auto gap-12 lg:grid-cols-2 py-20">
+        <div className="relative z-10 grid items-center w-full gap-12 px-8 py-20 mx-auto max-w-7xl lg:grid-cols-2">
           <div className="space-y-8">
             <div className="inline-flex items-center gap-2 px-3 py-1 text-xs font-bold tracking-widest uppercase border rounded-lg text-sky-400 border-sky-400/20 bg-sky-400/5">
               <Droplets size={14} />
@@ -174,15 +174,15 @@ function Homepage() {
               communities with our unified water management platform.
             </p>
 
-            <div className="flex flex-col gap-4 sm:flex-row pt-4">
+            <div className="flex flex-col gap-4 pt-4 sm:flex-row">
               <button 
                 onClick={() => navigate('/login')} 
-                className="flex items-center justify-center gap-2 px-8 py-4 font-bold transition-all duration-300 rounded-xl text-blue-950 bg-sky-300 hover:bg-sky-200 hover:-translate-y-1 shadow-lg shadow-sky-400/20"
+                className="flex items-center justify-center gap-2 px-8 py-4 font-bold transition-all duration-300 shadow-lg rounded-xl text-blue-950 bg-sky-300 hover:bg-sky-200 hover:-translate-y-1 shadow-sky-400/20"
               >
                 Get Started
                 <ArrowRight size={20} />
               </button>
-              <button className="px-8 py-4 font-bold transition-all duration-300 bg-white/5 border-2 rounded-xl text-white border-white/10 hover:bg-white/10">
+              <button className="px-8 py-4 font-bold text-white transition-all duration-300 border-2 bg-white/5 rounded-xl border-white/10 hover:bg-white/10">
                 View Demo
               </button>
             </div>
@@ -205,8 +205,8 @@ function Homepage() {
                       <item.icon size={24} />
                     </div>
                     <div>
-                      <h3 className="font-bold text-white mb-1">{item.title}</h3>
-                      <p className="text-sm text-blue-100/50 leading-relaxed">{item.desc}</p>
+                      <h3 className="mb-1 font-bold text-white">{item.title}</h3>
+                      <p className="text-sm leading-relaxed text-blue-100/50">{item.desc}</p>
                     </div>
                   </div>
                 </div>
@@ -300,7 +300,7 @@ function Homepage() {
         <div className="max-w-6xl mx-auto">
           <div className="mb-12 text-center">
             <h2 className="mb-3 text-4xl font-bold text-white">
-              Why Choose AquaTrack?
+              Why Choose MajiTrack?
             </h2>
             <p className="font-medium text-sky-300">
               Transforming water management for modern communities

@@ -31,7 +31,7 @@ import {
   Droplets
 } from 'lucide-react'
 import 'leaflet/dist/leaflet.css'
-import SMSAlertPanel from './SMSAlertPanel'
+// import SMSAlertPanel from './SMSAlertPanel' // Removed SMS functionality
 
 function AdminDashboard() {
   const navigate = useNavigate()
@@ -619,8 +619,8 @@ function AdminDashboard() {
         </div>
       </div>
 
-      {/* SMS Alert System */}
-      <SMSAlertPanel />
+      {/* SMS Alert System Removed */}
+
 
       {/* Stats Grid */}
       <div className="grid grid-cols-1 gap-6 mb-8 sm:grid-cols-2 lg:grid-cols-4">
@@ -700,7 +700,7 @@ function AdminDashboard() {
       {/* Main Content Grid */}
       <div className="grid grid-cols-1 gap-8 mb-8 lg:grid-cols-3">
         
-        {/* Recent System-Wide Reports */}
+        {/* Recent System-Wide Reports / Maintenance Ticketing Logs */}
         <div className="p-6 bg-white border shadow-sm lg:col-span-2 border-slate-100 rounded-2xl">
           <div className="flex items-center justify-between mb-8">
             <div className="flex items-center gap-3">
@@ -708,7 +708,7 @@ function AdminDashboard() {
                 <AlertTriangle size={24} />
               </div>
               <h2 className="text-2xl font-black text-blue-950">
-                {searchQuery ? `Search Results (${filteredReports.length})` : 'Active Alerts'}
+                {searchQuery ? `Search Results (${filteredReports.length})` : 'Maintenance Ticketing Logs'}
               </h2>
             </div>
             <button 
@@ -719,7 +719,7 @@ function AdminDashboard() {
             </button>
           </div>
 
-          <div className="space-y-4">
+          <div className="overflow-x-auto">
             {filteredReports.length === 0 ? (
               <div className="py-20 text-center border-2 border-dashed bg-slate-50 rounded-2xl border-slate-200">
                 <CheckCircle className="mx-auto mb-4 text-emerald-500" size={48} />
@@ -731,28 +731,58 @@ function AdminDashboard() {
                 </p>
               </div>
             ) : (
-              filteredReports.map((report) => (
-                <div 
-                  key={report._id}
-                  onClick={() => navigate(`/admin/reports/${report._id}`)}
-                  className="flex items-center gap-4 p-5 transition-all border cursor-pointer group border-slate-100 rounded-2xl hover:border-blue-950 hover:bg-slate-50/50"
-                >
-                  <div className={`flex flex-col items-center justify-center w-14 h-14 rounded-xl flex-shrink-0 border ${getSeverityColor(report.severity)}`}>
-                    <span className="text-[10px] font-black uppercase tracking-tighter leading-none mb-1">{report.severity}</span>
-                    <Zap size={18} />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <h3 className="font-bold truncate transition-colors text-blue-950 group-hover:text-blue-600">{report.title}</h3>
-                    <p className="text-xs font-medium text-slate-500 mt-0.5">{report.location} • Submitted by {report.reportedBy?.name || 'User'}</p>
-                  </div>
-                  <div className="text-right">
-                    <span className={`inline-block px-3 py-1 text-[10px] font-black uppercase tracking-widest rounded-full ${getStatusColor(report.status)} mb-2`}>
-                      {report.status}
-                    </span>
-                    <p className="text-[10px] font-bold text-slate-400">{getRelativeTime(report.createdAt)}</p>
-                  </div>
-                </div>
-              ))
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="border-b border-slate-100 text-[10px] font-black uppercase tracking-widest text-slate-400">
+                    <th className="px-2 py-3">Severity</th>
+                    <th className="px-2 py-3">Incident / Area</th>
+                    <th className="px-2 py-3">Technician</th>
+                    <th className="px-2 py-3">Status</th>
+                    <th className="px-2 py-3 text-right">Time</th>
+                  </tr>
+                </thead>
+                <tbody className="text-sm">
+                  {filteredReports.map((report) => (
+                    <tr 
+                      key={report._id}
+                      onClick={() => navigate(`/admin/reports/${report._id}`)}
+                      className="border-b border-slate-50 hover:bg-slate-50/50 transition-colors cursor-pointer group"
+                    >
+                      <td className="px-2 py-4">
+                        <span className={`inline-flex items-center justify-center w-8 h-8 rounded-lg border ${getSeverityColor(report.severity)}`}>
+                          <Zap size={14} />
+                        </span>
+                      </td>
+                      <td className="px-2 py-4">
+                        <div className="flex items-center gap-2">
+                          <p className="font-bold text-blue-950 group-hover:text-blue-600 transition-colors truncate max-w-[180px]">
+                            {report.title}
+                          </p>
+                          {report.issueImage && (
+                            <span title="Image Evidence Attached">
+                              <Droplets size={12} className="text-sky-500 animate-pulse" />
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-[10px] text-slate-400 flex items-center gap-1">
+                          <MapPin size={10} /> {report.location}
+                        </p>
+                      </td>
+                      <td className="px-2 py-4 text-slate-600 font-medium">
+                        {report.assignedTo?.name || <span className="text-slate-300 italic">Unassigned</span>}
+                      </td>
+                      <td className="px-2 py-4">
+                        <span className={`inline-block px-2 py-0.5 text-[10px] font-black uppercase tracking-tighter rounded-md ${getStatusColor(report.status)}`}>
+                          {report.status}
+                        </span>
+                      </td>
+                      <td className="px-2 py-4 text-right text-[10px] font-bold text-slate-400">
+                        {getRelativeTime(report.createdAt)}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             )}
           </div>
         </div>

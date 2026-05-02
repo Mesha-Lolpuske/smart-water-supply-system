@@ -7,68 +7,90 @@ import Notification from '../models/notification.js';
  * Get logged-in user's profile
  */
 export const getProfile = async (req, res) => {
-  const user = await User.findById(req.user.id).select('-password');
+  try {
+    const user = await User.findById(req.user.id).select('-password');
 
-  if (!user) {
-    return res.status(404).json({ message: 'User not found' });
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    res.json({ success: true, user });
+  } catch (error) {
+    console.error('Error fetching profile:', error);
+    res.status(500).json({ message: 'Server error while fetching profile' });
   }
-
-  res.json({ success: true, user });
 };
 
 /**
  * PUT /api/profile
- * Update name and address only
+ * Update profile details
  */
 export const updateProfile = async (req, res) => {
-  const { name, address } = req.body;
+  try {
+    const { name, address, phone, zone } = req.body;
 
-  const user = await User.findById(req.user.id);
+    const user = await User.findById(req.user.id);
 
-  if (!user) {
-    return res.status(404).json({ message: 'User not found' });
-  }
-
-  if (name) user.name = name;
-  if (address) user.address = address;
-
-  await user.save();
-
-  res.json({
-    success: true,
-    message: 'Profile updated successfully',
-    user: {
-      id: user._id,
-      name: user.name,
-      email: user.email,
-      address: user.address
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
     }
-  });
+
+    if (name) user.name = name;
+    if (address) user.address = address;
+    if (phone) user.phone = phone;
+    if (zone) user.zone = zone;
+
+    await user.save();
+
+    res.json({
+      success: true,
+      message: 'Profile updated successfully',
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        phone: user.phone,
+        address: user.address,
+        zone: user.zone
+      }
+    });
+  } catch (error) {
+    console.error('Error updating profile:', error);
+    if (error.code === 11000) {
+      return res.status(400).json({ message: 'Email or phone already in use' });
+    }
+    res.status(500).json({ message: 'Server error while updating profile' });
+  }
 };
 
 /**
  * PUT /api/profile/change-password
  */
 export const changePassword = async (req, res) => {
-  const { currentPassword, newPassword } = req.body;
+  try {
+    const { currentPassword, newPassword } = req.body;
 
-  if (!currentPassword || !newPassword) {
-    return res.status(400).json({ message: 'All fields are required' });
+    if (!currentPassword || !newPassword) {
+      return res.status(400).json({ message: 'All fields are required' });
+    }
+
+    const user = await User.findById(req.user.id).select('+password');
+
+    if (!(await user.comparePassword(currentPassword))) {
+      return res.status(400).json({ message: 'Current password is incorrect' });
+    }
+
+    user.password = newPassword;
+    await user.save();
+
+    res.json({
+      success: true,
+      message: 'Password changed successfully'
+    });
+  } catch (error) {
+    console.error('Error changing password:', error);
+    res.status(500).json({ message: 'Server error while changing password' });
   }
-
-  const user = await User.findById(req.user.id).select('+password');
-
-  if (!(await user.comparePassword(currentPassword))) {
-    return res.status(400).json({ message: 'Current password is incorrect' });
-  }
-
-  user.password = newPassword;
-  await user.save();
-
-  res.json({
-    success: true,
-    message: 'Password changed successfully'
-  });
 };
 
 export const deleteProfile = async (req, res) => {

@@ -89,40 +89,9 @@ router.post('/verify-otp', verifyOTP);
 
 /**
  * @swagger
- * /api/auth/verify-otp:
- *   post:
- *     summary: Verify OTP for user account (email or SMS)
- *     tags: [Auth]
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               userId:
- *                 type: string
- *                 example: 60d5ecb74b24c72b8c8b4567
- *               otp:
- *                 type: string
- *                 example: 123456
- *               method:
- *                 type: string
- *                 enum: [email, sms]
- *                 default: email
- *                 example: email
- *     responses:
- *       200:
- *         description: OTP verified successfully
- *       400:
- *         description: Invalid or expired OTP
- */
-
-/**
- * @swagger
  * /api/auth/resend-otp:
  *   post:
- *     summary: Resend OTP via email and/or SMS
+ *     summary: Resend OTP via email
  *     tags: [Auth]
  *     requestBody:
  *       required: true
@@ -137,11 +106,6 @@ router.post('/verify-otp', verifyOTP);
  *               email:
  *                 type: string
  *                 example: john@example.com
- *               method:
- *                 type: string
- *                 enum: [email, sms, both]
- *                 default: both
- *                 example: both
  *     responses:
  *       200:
  *         description: OTP resent successfully

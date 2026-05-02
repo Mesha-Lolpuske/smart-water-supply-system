@@ -74,7 +74,6 @@ function AdminSettings() {
           <div className="space-y-4">
             {[
               { key: 'emailNotifications', label: 'Email Notifications', desc: 'Send email alerts for new reports' },
-              { key: 'smsNotifications', label: 'SMS Notifications', desc: 'Send SMS alerts for critical reports' },
               { key: 'autoResolveReports', label: 'Auto-resolve Reports', desc: 'Automatically resolve reports after deadline' },
             ].map((item) => (
               <div key={item.key} className="flex items-center justify-between p-4 border-2 rounded-lg bg-sky-50 border-sky-100">

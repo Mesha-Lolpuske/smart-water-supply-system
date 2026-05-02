@@ -18,7 +18,8 @@ import {
   MessageSquare,
   History,
   Map,
-  MapPin
+  MapPin,
+  Droplets
 } from 'lucide-react'
 import 'leaflet/dist/leaflet.css'
 
@@ -630,6 +631,11 @@ function TechnicianDashboard() {
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
                     <h3 className="font-bold text-blue-950 truncate group-hover:text-emerald-600 transition-colors">{report.title}</h3>
+                    {report.issueImage && (
+                      <span title="Image Evidence Attached">
+                        <Droplets size={12} className="text-sky-500 animate-pulse" />
+                      </span>
+                    )}
                     <span className={`px-2 py-0.5 text-[8px] font-black uppercase rounded-full ${getStatusColor(report.status)}`}>
                       {report.status}
                     </span>

@@ -9,8 +9,8 @@ function UserManagement() {
   const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
   const [roleFilter, setRoleFilter] = useState('all')
+  const [editForm, setEditForm] = useState({ name: '', email: '', role: '', phone: '', zone: '' })
   const [editingUser, setEditingUser] = useState(null)
-  const [editForm, setEditForm] = useState({ name: '', email: '', role: '' })
 
   useEffect(() => {
     fetchUsers()
@@ -59,7 +59,13 @@ function UserManagement() {
 
   const startEdit = (user) => {
     setEditingUser(user._id)
-    setEditForm({ name: user.name, email: user.email, role: user.role })
+    setEditForm({ 
+      name: user.name, 
+      email: user.email, 
+      role: user.role, 
+      phone: user.phone || '', 
+      zone: user.zone || 'Zone A' 
+    })
   }
 
   const cancelEdit = () => {
@@ -75,14 +81,15 @@ function UserManagement() {
         toast.success('User details updated')
       }
     } catch (error) {
-      toast.error('Failed to update user details')
+      toast.error(error.response?.data?.message || 'Failed to update user details')
     }
   }
 
   const filteredUsers = users.filter(user => {
     const matchesSearch = 
-      user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      user.email.toLowerCase().includes(searchQuery.toLowerCase())
+      (user.name || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (user.email || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (user.phone || '').toLowerCase().includes(searchQuery.toLowerCase())
     
     const matchesRole = roleFilter === 'all' || user.role === roleFilter
     
@@ -131,7 +138,7 @@ function UserManagement() {
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={20} />
           <input
             type="text"
-            placeholder="Search citizens by name or email..."
+            placeholder="Search citizens by name, email or phone..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full pl-12 pr-4 py-4 bg-white border border-slate-200 rounded-2xl shadow-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all font-medium text-blue-950"
@@ -159,9 +166,9 @@ function UserManagement() {
             <thead>
               <tr className="bg-slate-50 border-b border-slate-200">
                 <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-500">Citizen / Staff</th>
+                <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-500">Contact / Zone</th>
                 <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-500">System Role</th>
                 <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-500">Reports</th>
-                <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-500">Joined Date</th>
                 <th className="px-6 py-4 text-right text-[10px] font-black uppercase tracking-widest text-slate-500">Actions</th>
               </tr>
             </thead>
@@ -184,7 +191,7 @@ function UserManagement() {
                             type="text"
                             value={editForm.name}
                             onChange={(e) => setEditForm({...editForm, name: e.target.value})}
-                            className="w-full px-3 py-1.5 text-sm border-2 border-blue-200 rounded-lg focus:border-blue-500 outline-none"
+                            className="w-full px-3 py-1.5 text-sm border-2 border-blue-200 rounded-lg focus:border-blue-500 outline-none font-bold"
                             placeholder="Full Name"
                           />
                           <input
@@ -211,6 +218,34 @@ function UserManagement() {
                     </td>
                     <td className="px-6 py-4">
                       {editingUser === user._id ? (
+                        <div className="space-y-2">
+                          <input
+                            type="text"
+                            value={editForm.phone}
+                            onChange={(e) => setEditForm({...editForm, phone: e.target.value})}
+                            className="w-full px-3 py-1.5 text-sm border-2 border-blue-200 rounded-lg focus:border-blue-500 outline-none"
+                            placeholder="Phone Number"
+                          />
+                          <select
+                            value={editForm.zone}
+                            onChange={(e) => setEditForm({...editForm, zone: e.target.value})}
+                            className="w-full px-3 py-1.5 text-sm border-2 border-blue-200 rounded-lg focus:border-blue-500 outline-none"
+                          >
+                            <option value="Zone A">Zone A</option>
+                            <option value="Zone B (Central)">Zone B (Central)</option>
+                            <option value="Zone C (Southern)">Zone C (Southern)</option>
+                            <option value="Zone D (Western)">Zone D (Western)</option>
+                          </select>
+                        </div>
+                      ) : (
+                        <div>
+                          <p className="text-sm font-bold text-blue-950">{user.phone || 'No phone'}</p>
+                          <p className="text-[10px] font-black text-sky-600 uppercase tracking-widest">{user.zone || 'No Zone'}</p>
+                        </div>
+                      )}
+                    </td>
+                    <td className="px-6 py-4">
+                      {editingUser === user._id ? (
                         <select
                           value={editForm.role}
                           onChange={(e) => setEditForm({...editForm, role: e.target.value})}
@@ -227,16 +262,11 @@ function UserManagement() {
                         </div>
                       )}
                     </td>
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm font-black text-blue-950">{user.reportCount || 0}</span>
-                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Reports</span>
+                    <td className="px-6 py-4 text-center">
+                      <div className="flex flex-col items-center">
+                        <span className="text-sm font-black text-blue-950">{user.reports || 0}</span>
+                        <span className="text-[9px] font-bold text-slate-400 uppercase tracking-tighter">Reports</span>
                       </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <p className="text-xs font-bold text-slate-500">
-                        {new Date(user.createdAt).toLocaleDateString()}
-                      </p>
                     </td>
                     <td className="px-6 py-4 text-right">
                       {editingUser === user._id ? (

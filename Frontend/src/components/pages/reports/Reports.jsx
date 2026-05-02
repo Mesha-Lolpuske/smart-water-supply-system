@@ -1,5 +1,5 @@
 import DashboardLayout from '../../layout/DashboardLayout'
-import { Filter, Eye, Trash2, CheckCircle, AlertTriangle, User, MapPin, Clock, Search } from 'lucide-react'
+import { Filter, Eye, Trash2, CheckCircle, AlertTriangle, User, MapPin, Clock, Search, Image as ImageIcon } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { useState, useEffect } from 'react'
 import { reportService } from '../../services/reportService'
@@ -33,9 +33,9 @@ function Reports() {
 
   const handleMarkResolved = async (id) => {
     try {
-      const res = await reportService.updateStatus(id, 'resolved')
+      const res = await reportService.updateStatus(id, 'Resolved')
       if (res.success) {
-        setReports(prev => prev.map(r => r._id === id ? { ...r, status: 'resolved' } : r))
+        setReports(prev => prev.map(r => r._id === id ? { ...r, status: 'Resolved' } : r))
         toast.success('Report marked as resolved')
       }
     } catch {
@@ -82,9 +82,12 @@ function Reports() {
 
   const getStatusColor = (status) => {
     const colors = {
-      pending: 'bg-orange-100 text-orange-700',
-      investigating: 'bg-blue-100 text-blue-700',
-      resolved: 'bg-emerald-100 text-emerald-700'
+      'Reported': 'bg-orange-100 text-orange-700',
+      'Technician Assigned': 'bg-blue-100 text-blue-700',
+      'In Progress': 'bg-sky-100 text-sky-700',
+      'Fixed': 'bg-emerald-100 text-emerald-700',
+      'Resolved': 'bg-emerald-100 text-emerald-700',
+      'Cancelled': 'bg-red-100 text-red-700'
     }
     return colors[status] || 'bg-slate-100 text-slate-700'
   }
@@ -147,21 +150,21 @@ function Reports() {
         <div className="p-6 bg-white border shadow-sm border-slate-100 rounded-2xl">
           <p className="text-[10px] font-black text-orange-600 uppercase tracking-widest mb-2">Awaiting Action</p>
           <div className="flex items-baseline gap-2">
-            <span className="text-3xl font-black text-blue-950">{reports.filter(r => r.status === 'pending').length}</span>
+            <span className="text-3xl font-black text-blue-950">{reports.filter(r => r.status === 'Reported').length}</span>
             <span className="text-xs font-bold text-slate-400">Reports</span>
           </div>
         </div>
         <div className="p-6 bg-white border shadow-sm border-slate-100 rounded-2xl">
           <p className="text-[10px] font-black text-blue-600 uppercase tracking-widest mb-2">Under Investigation</p>
           <div className="flex items-baseline gap-2">
-            <span className="text-3xl font-black text-blue-950">{reports.filter(r => r.status === 'investigating').length}</span>
+            <span className="text-3xl font-black text-blue-950">{reports.filter(r => ['Technician Assigned', 'In Progress'].includes(r.status)).length}</span>
             <span className="text-xs font-bold text-slate-400">Reports</span>
           </div>
         </div>
         <div className="p-6 bg-white border shadow-sm border-slate-100 rounded-2xl">
           <p className="text-[10px] font-black text-emerald-600 uppercase tracking-widest mb-2">Fully Resolved</p>
           <div className="flex items-baseline gap-2">
-            <span className="text-3xl font-black text-blue-950">{reports.filter(r => r.status === 'resolved').length}</span>
+            <span className="text-3xl font-black text-blue-950">{reports.filter(r => ['Fixed', 'Resolved'].includes(r.status)).length}</span>
             <span className="text-xs font-bold text-slate-400">Reports</span>
           </div>
         </div>
@@ -211,6 +214,12 @@ function Reports() {
                     </span>
                     <span className="flex items-center gap-1.5"><MapPin size={16} className="text-sky-500" />{report.location}</span>
                     <span className="flex items-center gap-1.5"><Clock size={16} className="text-sky-500" />{getRelativeTime(report.createdAt)}</span>
+                    {report.issueImage && (
+                      <span className="flex items-center gap-1.5 px-2 py-0.5 bg-blue-50 text-blue-600 rounded-lg text-[10px] uppercase font-black">
+                        <ImageIcon size={14} />
+                        Image Attached
+                      </span>
+                    )}
                   </div>
                 </div>
                 <div className="flex items-center gap-3">
@@ -229,7 +238,7 @@ function Reports() {
                   Access Full Case
                 </button>
                 
-                {report.status !== 'resolved' && (
+                {!['Fixed', 'Resolved'].includes(report.status) && (
                   <button 
                     onClick={() => handleMarkResolved(report._id)}
                     className="flex items-center justify-center gap-2 px-6 py-3.5 text-xs font-black transition-all rounded-xl text-white bg-blue-950 hover:bg-blue-900 shadow-xl uppercase tracking-widest"

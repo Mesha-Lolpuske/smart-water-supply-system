@@ -51,7 +51,7 @@ function RegisterPage() {
     console.log('📡 Response:', result)
     
     if (result.success) {
-      console.log('✅ Success! Check your email for OTP')
+      console.log('✅ Success! Check your email and phone for OTP')
       navigate('/verify-otp', { 
         state: { 
           userId: result.data.userId,
@@ -118,6 +118,8 @@ function RegisterPage() {
                   <Mail className="absolute text-blue-300 left-3 top-3.5" size={20} />
                   <input
                     type="email"
+                    name="email"
+                    autoComplete="username"
                     required
                     value={formData.email}
                     onChange={(e) => setFormData({...formData, email: e.target.value})}
@@ -140,7 +142,6 @@ function RegisterPage() {
                     className="w-full py-3 pl-10 pr-4 text-white placeholder-blue-300 transition border rounded-lg bg-white/10 border-sky-400/30 focus:outline-none focus:border-sky-400"
                   />
                 </div>
-                <p className="mt-1 text-xs text-blue-200">For urgent water alerts via SMS</p>
               </div>
 
               <div>
@@ -164,6 +165,8 @@ function RegisterPage() {
                   <Lock className="absolute text-blue-300 left-3 top-3.5" size={20} />
                   <input
                     type={showPassword ? "text" : "password"}
+                    name="password"
+                    autocomplete="new-password"
                     required
                     value={formData.password}
                     onChange={(e) => setFormData({...formData, password: e.target.value})}

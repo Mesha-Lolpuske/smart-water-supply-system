@@ -1,5 +1,5 @@
 import DashboardLayout from '../../layout/DashboardLayout'
-import { Plus, Filter, Eye, Trash2, AlertTriangle, FileText, Clock, Search, MapPin } from 'lucide-react'
+import { Plus, Filter, Eye, Trash2, AlertTriangle, FileText, Clock, Search, MapPin, Image as ImageIcon } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { useState, useEffect } from 'react'
 import { toast } from 'react-toastify'
@@ -72,15 +72,22 @@ function MyReports() {
 
   const getStatusColor = (status) => {
     const colors = {
-      pending: 'bg-orange-100 text-orange-700',
-      investigating: 'bg-blue-100 text-blue-700',
-      resolved: 'bg-emerald-100 text-emerald-700'
+      'Reported': 'bg-orange-100 text-orange-700',
+      'Technician Assigned': 'bg-blue-100 text-blue-700',
+      'In Progress': 'bg-sky-100 text-sky-700',
+      'Fixed': 'bg-emerald-100 text-emerald-700',
+      'Resolved': 'bg-emerald-100 text-emerald-700',
+      'Cancelled': 'bg-red-100 text-red-700'
     }
     return colors[status] || 'bg-slate-100 text-slate-700'
   }
 
   const filteredReports = reports.filter(r => {
-    const matchesStatus = filterStatus === 'all' || r.status === filterStatus
+    let matchesStatus = true;
+    if (filterStatus === 'pending') matchesStatus = r.status === 'Reported';
+    else if (filterStatus === 'investigating') matchesStatus = ['Technician Assigned', 'In Progress'].includes(r.status);
+    else if (filterStatus === 'resolved') matchesStatus = ['Fixed', 'Resolved'].includes(r.status);
+    
     const query = (searchQuery || '').toLowerCase().trim()
     const matchesSearch = !query || 
       r.title.toLowerCase().includes(query) ||
@@ -196,6 +203,12 @@ function MyReports() {
                   <div className="flex flex-wrap items-center gap-4 text-sm font-bold text-slate-400">
                     <span className="flex items-center gap-1.5"><MapPin size={16} className="text-sky-500" />{report.location}</span>
                     <span className="flex items-center gap-1.5"><Clock size={16} className="text-sky-500" />{getRelativeTime(report.createdAt)}</span>
+                    {report.issueImage && (
+                      <span className="flex items-center gap-1.5 px-2 py-0.5 bg-sky-50 text-sky-600 rounded-lg text-[10px] uppercase font-black">
+                        <ImageIcon size={14} />
+                        Image Attached
+                      </span>
+                    )}
                   </div>
                 </div>
                 <div className="flex items-center gap-3">

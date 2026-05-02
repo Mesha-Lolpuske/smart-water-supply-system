@@ -5,8 +5,8 @@ import TechnicianSidebar from './TechnicianSidebar'
 import Footer from './Footer'
 import { useAuth } from '../hooks/useAuth'
 
-function DashboardLayout({ children, isAdmin: isAdminProp = false }) {
-  const { user, isAdmin, isTechnician } = useAuth()
+function DashboardLayout({ children }) {
+  const {  isAdmin, isTechnician } = useAuth()
   
   const renderSidebar = () => {
     if (isAdmin) return <AdminSidebar />

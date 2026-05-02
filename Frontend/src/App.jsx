@@ -60,10 +60,7 @@ import AdminSettings from "./components/pages/admin/AdminSettings";
 import UserManagement from "./components/pages/admin/UserManagement";
 
 // New Analytics Report Pages
-import UserRegistrationTrends from "./components/pages/System reports/UserRegistrationTrends";
-import IncidentSeverityDistribution from "./components/pages/System reports/IncidentSeverityDistribution";
-import ScheduleDistributionByLocation from "./components/pages/System reports/ScheduleDistributionByLocation";
-import AnnouncementCategories from "./components/pages/System reports/AnnouncementCategories";
+import SystemReports from "./components/pages/System reports/SystemReports";
 import InteractiveGISMap from "./components/pages/maps/InteractiveGISMap";
 
 
@@ -323,36 +320,28 @@ function App() {
             />
             {/* Admin - Analytics Reports */}
             <Route
-              path="/admin/reports/user-registration-trends"
+              path="/admin/reports/system"
               element={
                 <AdminRoute>
-                  <UserRegistrationTrends />
+                  <SystemReports />
                 </AdminRoute>
               }
+            />
+            <Route
+              path="/admin/reports/user-registration-trends"
+              element={<Navigate to="/admin/reports/system?tab=users" replace />}
             />
             <Route
               path="/admin/reports/incident-severity-distribution"
-              element={
-                <AdminRoute>
-                  <IncidentSeverityDistribution />
-                </AdminRoute>
-              }
+              element={<Navigate to="/admin/reports/system?tab=incidents" replace />}
             />
             <Route
               path="/admin/reports/schedule-distribution"
-              element={
-                <AdminRoute>
-                  <ScheduleDistributionByLocation />
-                </AdminRoute>
-              }
+              element={<Navigate to="/admin/reports/system?tab=schedules" replace />}
             />
             <Route
               path="/admin/reports/announcement-categories"
-              element={
-                <AdminRoute>
-                  <AnnouncementCategories />
-                </AdminRoute>
-              }
+              element={<Navigate to="/admin/reports/system?tab=announcements" replace />}
             />
             <Route
               path="/admin/reports/interactive-gis-mapping"

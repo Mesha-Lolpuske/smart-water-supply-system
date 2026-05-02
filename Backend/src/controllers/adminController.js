@@ -37,7 +37,7 @@ export const getAllUsers = async (req, res) => {
  */
 export const updateUser = async (req, res) => {
   try {
-    const { name, email, address, isVerified, role } = req.body;
+    const { name, email, address, isVerified, role, phone, zone } = req.body;
     const user = await User.findById(req.params.id);
 
     if (!user) {
@@ -48,6 +48,8 @@ export const updateUser = async (req, res) => {
     if (email) user.email = email;
     if (address) user.address = address;
     if (role) user.role = role;
+    if (phone) user.phone = phone;
+    if (zone) user.zone = zone;
     if (typeof isVerified !== 'undefined') user.isVerified = isVerified;
 
     await user.save();
@@ -59,6 +61,9 @@ export const updateUser = async (req, res) => {
     });
   } catch (error) {
     console.error('Error updating user:', error);
+    if (error.code === 11000) {
+      return res.status(400).json({ message: 'Email or phone already in use' });
+    }
     res.status(500).json({ message: 'Server error while updating user' });
   }
 };

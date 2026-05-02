@@ -15,14 +15,16 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  zone: {
+    type: String,
+    enum: ['Zone A', 'Zone B (Central)', 'Zone C (Southern)', 'Zone D (Western)'],
+    default: 'Zone A'
+  },
   otp: { type: String, select: false },
   otpExpires: { type: Date, select: false },
-  smsOTP: { type: String, select: false },
-  smsOTPExpires: { type: Date, select: false },
   isVerified: { type: Boolean, default: false },
   resetPasswordOTP: { type: String, select: false },
   resetPasswordOTPExpires: { type: Date, select: false },
-  smsNotificationsEnabled: { type: Boolean, default: true },
   createdAt: { type: Date, default: Date.now },
 });
 

@@ -1,5 +1,5 @@
 import DashboardLayout from '../../layout/DashboardLayout'
-import { ArrowLeft, Send, Users, User, AlertTriangle, Bell, CheckCircle } from 'lucide-react'
+import { ArrowLeft, Send, Users, User, AlertTriangle, Bell, CheckCircle, MessageSquare } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { useState, useEffect } from 'react'
 import { toast } from 'react-toastify'
@@ -33,13 +33,12 @@ function CreateNotification() {
       setFetchingUsers(true)
       const res = await userService.getAllUsers()
       if (res.success) {
-        // Filter to show only regular users for targeting? 
-        // Or show everyone. Let's show everyone except maybe self is not needed but fine.
-        setUsers(res.users)
+        // Only show verified users as they are the 'verified citizens' with valid phone numbers
+        setUsers(res.users.filter(u => u.isVerified))
       }
     } catch (err) {
       console.error('Error fetching users:', err)
-      setError('Could not load user list')
+      setError('Could not load verified citizen list')
     } finally {
       setFetchingUsers(false)
     }

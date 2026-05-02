@@ -1,7 +1,7 @@
 // controllers/passwordResetController.js
 import User from '../models/User.js';
 import { generateOTP, getOTPExpiry } from '../utils/otp.js';
-import { sendPasswordResetOTP } from '../config/nodemailer.js';
+import { sendPasswordResetEmail, sendOTPSMS } from '../utils/brevoService.js';
 
 // @desc    Request password reset (send OTP)
 // @route   POST /api/password-reset/request
@@ -36,18 +36,23 @@ export const requestPasswordReset = async (req, res) => {
     await user.save();
 
     console.log("Frontend requested reset for:", email);
-console.log("Sending OTP to (from DB):", user.email, "with OTP:", otp);
+    console.log("Sending OTP to:", user.email, "with OTP:", otp);
 
     // Send OTP email
-    const emailSent = await sendPasswordResetOTP(user.email, otp, user.name);
+    const emailResult = await sendPasswordResetEmail(user.email, otp, user.name);
+    
+    // Also send SMS if phone is available
+    if (user.phone) {
+      await sendOTPSMS(user.phone, otp);
+    }
 
-    if (!emailSent) {
+    if (!emailResult.success) {
       return res.status(500).json({ message: 'Failed to send reset code. Please try again.' });
     }
 
     res.status(200).json({
       success: true,
-      message: 'Password reset code sent to your email'
+      message: 'Password reset code sent to your email and phone'
     });
   } catch (error) {
     console.error('Error requesting password reset:', error);
@@ -184,15 +189,19 @@ export const resendResetOTP = async (req, res) => {
     await user.save();
 
     // Send OTP email
-    const emailSent = await sendPasswordResetOTP(email, otp, user.name);
+    const emailResult = await sendPasswordResetEmail(email, otp, user.name);
 
-    if (!emailSent) {
+    if (user.phone) {
+      await sendOTPSMS(user.phone, otp);
+    }
+
+    if (!emailResult.success) {
       return res.status(500).json({ message: 'Failed to send reset code. Please try again.' });
     }
 
     res.status(200).json({
       success: true,
-      message: 'New password reset code sent to your email'
+      message: 'New password reset code sent to your email and phone'
     });
   } catch (error) {
     console.error('Error resending reset OTP:', error);

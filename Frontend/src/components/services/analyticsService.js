@@ -17,6 +17,12 @@ export const analyticsService = {
   getActivityAnalytics: async () => {
     const response = await api.get('/analytics/activity-analytics');
     return response.data;
+  },
+
+  // Report 4: Detailed Reports for Tables
+  getDetailedReports: async () => {
+    const response = await api.get('/analytics/detailed-reports');
+    return response.data;
   }
 }
 

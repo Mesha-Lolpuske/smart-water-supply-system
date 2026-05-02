@@ -1,11 +1,12 @@
 import DashboardLayout from '../../layout/DashboardLayout'
-import { ArrowLeft, Edit, Trash2, MessageSquare, Clock, MapPin, CheckCircle, Wrench, User } from 'lucide-react'
+import { ArrowLeft, Edit, Trash2, MessageSquare, Clock, MapPin, CheckCircle, Wrench, User, ShieldCheck } from 'lucide-react'
 import { useNavigate, useParams, useLocation } from 'react-router-dom'
 import { useState, useEffect } from 'react'
 import { toast } from 'react-toastify'
 import { reportService } from '../../services/reportService'
 import { useAuth } from '../../hooks/useAuth'
 import userService from '../../services/userService'
+import { API_BASE_URL } from '../../services/api'
 
 function ReportDetails() {
   const navigate = useNavigate()
@@ -20,6 +21,8 @@ function ReportDetails() {
   const [showStatusModal, setShowStatusModal] = useState(false)
   const [newStatus, setNewStatus] = useState('')
   const [notes, setNotes] = useState('')
+
+  const serverUrl = API_BASE_URL.replace(/\/api\/?$/, '')
 
   useEffect(() => {
     fetchReportDetails()
@@ -122,7 +125,7 @@ function ReportDetails() {
   }
 
   return (
-    <DashboardLayout>
+    <DashboardLayout isAdmin={isAdmin}>
       <button
         onClick={() => navigate(-1)}
         className="flex items-center gap-2 mb-6 font-black text-sky-600 hover:text-sky-700 transition-colors uppercase tracking-widest text-xs"
@@ -210,6 +213,22 @@ function ReportDetails() {
                 <MessageSquare size={80} />
               </div>
             </div>
+
+            {report.issueImage && (
+              <div className="mb-8 overflow-hidden rounded-3xl border-2 border-slate-100">
+                <h3 className="text-xs font-black text-blue-950 uppercase tracking-widest mb-4 p-4 pb-0 flex items-center gap-2">
+                  Attached Evidence
+                </h3>
+                <div className="p-4 pt-2">
+                  <img 
+                    src={`${serverUrl}${report.issueImage}`} 
+                    alt="Issue Evidence" 
+                    className="w-full h-auto max-h-[500px] object-contain rounded-2xl cursor-pointer hover:opacity-95 transition-opacity"
+                    onClick={() => window.open(`${serverUrl}${report.issueImage}`, '_blank')}
+                  />
+                </div>
+              </div>
+            )}
 
             <div className="space-y-6">
               {report.adminNotes && (

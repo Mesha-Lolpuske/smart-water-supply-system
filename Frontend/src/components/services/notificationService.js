@@ -56,7 +56,7 @@ export const notificationService = {
     }
   },
 
-  // Broadcast notification to all users (Admin) - supports SMS
+  // Broadcast notification to all users (Admin)
   broadcastNotification: async (data) => {
     try {
       const response = await api.post('/notifications/broadcast', data);
@@ -67,7 +67,7 @@ export const notificationService = {
     }
   },
 
-  // Create individual notification (Admin) - supports SMS
+  // Create individual notification (Admin)
   createNotification: async (data) => {
     try {
       const response = await api.post('/notifications', data);

@@ -14,6 +14,7 @@ import {
 } from '../controllers/waterReport.js';
 
 import { authenticateUser, adminOnly, technicianOnly, staffOnly } from '../middleware/authMiddleware.js';
+import upload from '../utils/upload.js';
 
 const router = express.Router();
 
@@ -87,7 +88,7 @@ router.get('/my-reports', authenticateUser, getMyReports);
  *     requestBody:
  *       required: true
  *       content:
- *         application/json:
+ *         multipart/form-data:
  *           schema:
  *             type: object
  *             required:
@@ -106,6 +107,9 @@ router.get('/my-reports', authenticateUser, getMyReports);
  *                 type: string
  *               severity:
  *                 type: string
+ *               issueImage:
+ *                 type: string
+ *                 format: binary
  *     responses:
  *       201:
  *         description: Report created successfully
@@ -114,7 +118,7 @@ router.get('/my-reports', authenticateUser, getMyReports);
  *       401:
  *         description: Unauthorized
  */
-router.post('/', authenticateUser, createReport);
+router.post('/', authenticateUser, upload.single('issueImage'), createReport);
 
 /**
  * @swagger

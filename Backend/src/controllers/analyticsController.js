@@ -36,6 +36,11 @@ export const getUserAnalytics = async (req, res) => {
       { $sort: { '_id.year': 1, '_id.month': 1 } }
     ]);
 
+    // User List for Table
+    const userList = await User.find()
+      .select('name email role createdAt')
+      .sort({ createdAt: -1 });
+
     // Format trend data
     const monthNames = ["", "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
     const formattedTrend = registrationTrend.map(item => ({
@@ -47,7 +52,8 @@ export const getUserAnalytics = async (req, res) => {
       success: true,
       data: {
         roleDistribution,
-        registrationTrend: formattedTrend
+        registrationTrend: formattedTrend,
+        userList
       }
     });
   } catch (error) {
@@ -69,6 +75,11 @@ export const getIncidentAnalytics = async (req, res) => {
     // Severity distribution
     const severityDistribution = await WaterReport.aggregate([
       { $group: { _id: '$severity', count: { $sum: 1 } } }
+    ]);
+
+    // Incident by Category
+    const categoryDistribution = await WaterReport.aggregate([
+      { $group: { _id: '$reportType', count: { $sum: 1 } } }
     ]);
 
     // Incident trend (last 30 days)
@@ -99,12 +110,19 @@ export const getIncidentAnalytics = async (req, res) => {
       reports: item.count
     }));
 
+    // Incident List for Table
+    const incidentList = await WaterReport.find()
+      .select('title reportType severity status createdAt location')
+      .sort({ createdAt: -1 });
+
     res.status(200).json({
       success: true,
       data: {
         statusDistribution,
         severityDistribution,
-        incidentTrend: formattedTrend
+        categoryDistribution,
+        incidentTrend: formattedTrend,
+        incidentList
       }
     });
   } catch (error) {
@@ -146,5 +164,55 @@ export const getActivityAnalytics = async (req, res) => {
   } catch (error) {
     console.error('Error fetching activity analytics:', error);
     res.status(500).json({ message: 'Server error while fetching activity analytics' });
+  }
+};
+
+// @desc    Get detailed reports for tables
+// @route   GET /api/analytics/detailed-reports
+// @access  Admin only
+export const getDetailedReports = async (req, res) => {
+  try {
+    // 1. Maintenance Ticketing Logs: Outages with date, area, and assigned technician
+    const maintenanceLogs = await WaterReport.find({ reportType: 'outage' })
+      .sort({ createdAt: -1 })
+      .limit(50)
+      .populate('assignedTo', 'name')
+      .select('title createdAt location status assignedTo');
+
+    // 2. Technician Performance Roster
+    const technicians = await User.find({ role: 'technician' }).select('name');
+    
+    const performancePromises = technicians.map(async (tech) => {
+      const resolved = await WaterReport.countDocuments({ assignedTo: tech._id, status: 'Resolved' });
+      const pending = await WaterReport.countDocuments({ 
+        assignedTo: tech._id, 
+        status: { $in: ['Reported', 'Technician Assigned', 'In Progress'] } 
+      });
+      return {
+        name: tech.name,
+        resolved,
+        pending,
+        total: resolved + pending
+      };
+    });
+    
+    const technicianPerformance = await Promise.all(performancePromises);
+
+    // 3. Water Distribution Schedules: Structured timetable
+    const waterSchedules = await WaterSchedule.find({ isActive: true })
+      .sort({ title: 1 })
+      .select('title location scheduleType daysOfWeek startTime endTime');
+
+    res.status(200).json({
+      success: true,
+      data: {
+        maintenanceLogs,
+        technicianPerformance,
+        waterSchedules
+      }
+    });
+  } catch (error) {
+    console.error('Error fetching detailed reports:', error);
+    res.status(500).json({ message: 'Server error while fetching detailed reports' });
   }
 };

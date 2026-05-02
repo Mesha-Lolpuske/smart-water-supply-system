@@ -1,13 +1,12 @@
 // controllers/notificationController.js
 import Notification from '../models/notification.js';
-import { sendBulkSMSAlerts } from '../utils/sms.js';
 
 // @desc    Create a new notification
 // @route   POST /api/notifications
 // @access  Admin only
 export const createNotification = async (req, res) => {
   try {
-    const { recipient, type, title, message, relatedId, onModel, priority, sendSMS = false, zoneName } = req.body;
+    const { recipient, type, title, message, relatedId, onModel, priority } = req.body;
 
     // Validation
     if (!recipient || !type || !title || !message) {
@@ -24,20 +23,12 @@ export const createNotification = async (req, res) => {
       priority: priority || 'normal'
     });
 
-    await notification.populate('recipient', 'name email phone smsNotificationsEnabled');
-
-    // Send SMS if requested and user has SMS enabled
-    let smsResult = null;
-    if (sendSMS && zoneName && notification.recipient.phone && notification.recipient.smsNotificationsEnabled !== false) {
-      const smsResults = await sendBulkSMSAlerts([notification.recipient], type, zoneName, message);
-      smsResult = smsResults[0];
-    }
+    await notification.populate('recipient', 'name email phone');
 
     res.status(201).json({
       success: true,
       message: 'Notification created successfully',
-      notification,
-      smsSent: smsResult ? smsResult.success : false
+      notification
     });
   } catch (error) {
     console.error('Error creating notification:', error);
@@ -50,7 +41,7 @@ export const createNotification = async (req, res) => {
 // @access  Admin only
 export const broadcastNotification = async (req, res) => {
   try {
-    const { type, title, message, relatedId, onModel, priority, sendSMS = false, zoneName } = req.body;
+    const { type, title, message, relatedId, onModel, priority } = req.body;
 
     // Validation
     if (!type || !title || !message) {
@@ -60,8 +51,8 @@ export const broadcastNotification = async (req, res) => {
     // Import User model
     const User = (await import('../models/User.js')).default;
 
-    // Get all users
-    const users = await User.find({}, '_id name phone smsNotificationsEnabled');
+    // Get all verified users
+    const users = await User.find({ isVerified: true }, '_id name phone');
 
     // Create notifications for all users
     const notifications = users.map(user => ({
@@ -76,24 +67,10 @@ export const broadcastNotification = async (req, res) => {
 
     await Notification.insertMany(notifications);
 
-    // Send SMS alerts if requested
-    let smsResults = [];
-    if (sendSMS && zoneName) {
-      smsResults = await sendBulkSMSAlerts(users, type, zoneName, message);
-    }
-
-    const smsSuccessCount = smsResults.filter(result => result.success).length;
-    const smsFailCount = smsResults.filter(result => !result.success).length;
-
     res.status(201).json({
       success: true,
-      message: `Notification sent to ${users.length} users${sendSMS ? `, SMS sent to ${smsSuccessCount} users (${smsFailCount} failed)` : ''}`,
-      count: users.length,
-      smsResults: sendSMS ? {
-        total: smsResults.length,
-        successful: smsSuccessCount,
-        failed: smsFailCount
-      } : null
+      message: `Notification sent to ${users.length} users`,
+      count: users.length
     });
   } catch (error) {
     console.error('Error broadcasting notification:', error);

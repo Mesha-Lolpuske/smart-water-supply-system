@@ -2,7 +2,8 @@ import express from 'express';
 import {
   getUserAnalytics,
   getIncidentAnalytics,
-  getActivityAnalytics
+  getActivityAnalytics,
+  getDetailedReports
 } from '../controllers/analyticsController.js';
 import { authenticateUser, adminOnly } from '../middleware/authMiddleware.js';
 
@@ -57,5 +58,19 @@ router.get('/incident-analytics', getIncidentAnalytics);
  *         description: Activity analytics data
  */
 router.get('/activity-analytics', getActivityAnalytics);
+
+/**
+ * @swagger
+ * /api/analytics/detailed-reports:
+ *   get:
+ *     summary: Get detailed reports for tables
+ *     tags: [Analytics]
+ *     security:
+ *       - cookieAuth: []
+ *     responses:
+ *       200:
+ *         description: Detailed reports data
+ */
+router.get('/detailed-reports', getDetailedReports);
 
 export default router;

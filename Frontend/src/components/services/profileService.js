@@ -8,7 +8,7 @@ export const profileService = {
   updateProfile: (profileData) => api.put('/profile', profileData),
   
   // Change password
-  changePassword: (oldPassword, newPassword) => api.post('/profile/change-password', { oldPassword, newPassword }),
+  changePassword: (currentPassword, newPassword) => api.put('/profile/change-password', { currentPassword, newPassword }),
   
   // Get user's reports
   getUserReports: () => api.get('/profile/reports'),

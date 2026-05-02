@@ -37,10 +37,7 @@ function AdminSidebar() {
 
   // ✅ NEW: System Reports menu items
   const systemReportItems = [
-    { icon: UserCheck, label: 'User Registration Trends', path: '/admin/reports/user-registration-trends' },
-    { icon: TestTube, label: 'Incident Severity Analysis', path: '/admin/reports/incident-severity-distribution' },
-    { icon: Calendar, label: 'Schedule Distribution', path: '/admin/reports/schedule-distribution' },
-    { icon: Megaphone, label: 'Announcement Categories', path: '/admin/reports/announcement-categories' },
+    { icon: BarChart3, label: 'System Analytics', path: '/admin/reports/system' },
     { icon: Map, label: 'Interactive GIS Mapping', path: '/admin/reports/interactive-gis-mapping' },
   ]
 

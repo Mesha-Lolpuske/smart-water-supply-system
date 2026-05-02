@@ -10,7 +10,6 @@ Water Supply Tracking:
 View current water supply status for specific zones.
 Track scheduled maintenance and water cuts.
 Notifications & Alerts:
-SMS notifications for users with or without internet access.
 Email alerts for registered users.
 Custom alerts for water cuts, maintenance, emergencies, or restoration.
 Interactive Maps:
@@ -26,7 +25,6 @@ Tech Stack
 Frontend: React.js, Tailwind CSS
 Backend: Node.js, Express.js, MongoDB
 APIs:
-Africa's Talking SMS API for alerts
 Interactive Maps (Leaflet/Google Maps)
 Authentication: JWT (JSON Web Tokens)
 Deployment: GitHub, Heroku/Vercel (optional)

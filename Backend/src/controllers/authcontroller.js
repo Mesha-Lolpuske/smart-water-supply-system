@@ -5,8 +5,7 @@ import {
   clearTokenCookie,
 } from "../utils/jwt.js";
 import { generateOTP, getOTPExpiry } from "../utils/otp.js";
-import { sendOTPEmail } from "../config/nodemailer.js";
-import { sendSMSOTP, formatPhoneNumber } from "../utils/sms.js";
+import { sendOTPEmail } from "../config/nodemailer.js"; // ONLY import email
 import bcrypt from "bcryptjs";
 
 // Register User
@@ -31,49 +30,35 @@ export const register = async (req, res) => {
     const otp = generateOTP();
     const otpExpires = getOTPExpiry();
 
-    // Format phone number
-    const formattedPhone = formatPhoneNumber(phone);
-
     // Create user
     const user = await User.create({
       name,
       email,
-      phone: formattedPhone,
+      phone,
       password,
       role: "user",
       address,
       otp,
       otpExpires,
-      smsOTP: otp, // Same OTP for both email and SMS
-      smsOTPExpires: otpExpires,
       isVerified: false,
     });
 
-    console.log("Sending OTP to:", user.email, "and", user.phone);
+   console.log("Sending verification code to:", user.email);
 
-    // Send OTP email
-    const emailSent = await sendOTPEmail(user.email, otp, user.name);
-
-    // Send SMS OTP
-    const smsSent = await sendSMSOTP(user.phone, otp, user.name);
-
-    if (!emailSent.success) {
-      console.error("Email sending failed:", emailSent.error);
-    }
-
-    if (!smsSent.success) {
-      console.error("SMS sending failed:", smsSent.error);
-    }
-
-    if (!emailSent.success && !smsSent.success) {
+    // Send OTP via email ONLY for now
+    const emailResult = await sendOTPEmail(user.email, otp, user.name);
+    
+    // Check if email failed
+    if (!emailResult.success) {
+      console.error("Email sending failed:", emailResult.error);
       return res.status(500).json({
-        message: "User created but failed to send verification codes",
+        message: "User created but failed to send verification email",
       });
     }
 
     res.status(201).json({
       message:
-        "Registration successful! Please check your email and phone for OTP verification.",
+        "Registration successful! Please check your email for OTP verification.",
       userId: user._id,
     });
   } catch (error) {
@@ -85,13 +70,13 @@ export const register = async (req, res) => {
 // Verify OTP
 export const verifyOTP = async (req, res) => {
   try {
-    const { userId, otp, method = 'email' } = req.body;
+    const { userId, otp } = req.body;
 
     if (!userId || userId.trim() === '') {
       return res.status(400).json({ message: 'User ID is required' });
     }
 
-    const user = await User.findById(userId).select("+otp +otpExpires +smsOTP +smsOTPExpires");
+    const user = await User.findById(userId).select("+otp +otpExpires");
 
     if (!user) {
       return res.status(404).json({ message: "User not found" });
@@ -101,54 +86,36 @@ export const verifyOTP = async (req, res) => {
       return res.status(400).json({ message: "User already verified" });
     }
 
-    let isValidOTP = false;
-
-    // Check OTP based on method
-    if (method === 'sms') {
-      if (user.smsOTP !== otp) {
-        return res.status(400).json({ message: "Invalid SMS OTP" });
-      }
-      if (user.smsOTPExpires < Date.now()) {
-        return res.status(400).json({ message: "SMS OTP has expired" });
-      }
-      isValidOTP = true;
-    } else {
-      // Default to email OTP
-      if (user.otp !== otp) {
-        return res.status(400).json({ message: "Invalid email OTP" });
-      }
-      if (user.otpExpires < Date.now()) {
-        return res.status(400).json({ message: "Email OTP has expired" });
-      }
-      isValidOTP = true;
+    // Default to email OTP
+    if (user.otp !== otp) {
+      return res.status(400).json({ message: "Invalid verification code" });
+    }
+    if (user.otpExpires < Date.now()) {
+      return res.status(400).json({ message: "Verification code has expired" });
     }
 
-    if (isValidOTP) {
-      // Verify user
-      user.isVerified = true;
-      user.otp = undefined;
-      user.otpExpires = undefined;
-      user.smsOTP = undefined;
-      user.smsOTPExpires = undefined;
-      await user.save();
+    // Verify user
+    user.isVerified = true;
+    user.otp = undefined;
+    user.otpExpires = undefined;
+    await user.save();
 
-      const token = generateToken(user._id, user.role);
+    const token = generateToken(user._id, user.role);
 
-      // Set token in cookie
-      setTokenCookie(res, token);
+    // Set token in cookie
+    setTokenCookie(res, token);
 
-      res.status(200).json({
-        message: "Account verified successfully!",
-        token,
-        user: {
-          id: user._id,
-          name: user.name,
-          email: user.email,
-          role: user.role,
-          address: user.address,
-        },
-      });
-    }
+    res.status(200).json({
+      message: "Account verified successfully!",
+      token,
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        address: user.address,
+      },
+    });
   } catch (error) {
     console.log("Verify OTP error:", error);
     res.status(500).json({ message: "Server error", error: error.message });
@@ -159,7 +126,7 @@ export const verifyOTP = async (req, res) => {
 // Resend OTP
 export const resendOTP = async (req, res) => {
   try {
-    const { userId, email, method = 'both' } = req.body;
+    const { userId, email } = req.body;
 
     let user;
     if (userId) {
@@ -185,31 +152,20 @@ export const resendOTP = async (req, res) => {
 
     user.otp = otp;
     user.otpExpires = otpExpires;
-    user.smsOTP = otp;
-    user.smsOTPExpires = otpExpires;
     await user.save();
 
-    let emailSent = { success: false };
-    let smsSent = { success: false };
-
-    if (method === 'email' || method === 'both') {
-      emailSent = await sendOTPEmail(user.email, otp, user.name);
+    const emailResult = await sendOTPEmail(user.email, otp, user.name);
+    
+    if (user.phone) {
+      await sendOTPSMS(user.phone, otp);
     }
 
-    if (method === 'sms' || method === 'both') {
-      smsSent = await sendSMSOTP(user.phone, otp, user.name);
+    if (!emailResult.success) {
+      return res.status(500).json({ message: "Failed to send OTP via email" });
     }
-
-    if (!emailSent.success && !smsSent.success) {
-      return res.status(500).json({ message: "Failed to send OTP via both email and SMS" });
-    }
-
-    const sentMethods = [];
-    if (emailSent.success) sentMethods.push('email');
-    if (smsSent.success) sentMethods.push('SMS');
 
     res.status(200).json({
-      message: `OTP resent successfully via ${sentMethods.join(' and ')}`
+      message: `OTP resent successfully to your email and phone`
     });
   } catch (error) {
     console.log("Resend OTP error:", error);

@@ -19,7 +19,8 @@ export const createReport = async (req, res) => {
       description,
       location,
       severity: severity || 'medium',
-      reportedBy: req.user.id
+      reportedBy: req.user.id,
+      issueImage: req.file ? `/uploads/reports/${req.file.filename}` : ''
     });
 
     // Populate the reportedBy field before sending response
@@ -153,14 +154,35 @@ export const updateReportStatus = async (req, res) => {
 
     // If status is Fixed or Resolved, mark as resolved
     if (status === 'Fixed' || status === 'Resolved') {
-      report.resolvedBy = req.user.id;
-      report.resolvedAt = new Date();
+      if (req.user && req.user.id) {
+        // Simple check to ensure req.user.id is a valid hex string of 24 chars (standard ObjectId)
+        if (req.user.id.length === 24) {
+          report.resolvedBy = req.user.id;
+          report.resolvedAt = new Date();
+        } else {
+          console.warn('req.user.id is not a valid ObjectId string:', req.user.id);
+        }
+      }
     }
 
-    await report.save();
-    await report.populate('reportedBy', 'name email address');
-    await report.populate('resolvedBy', 'name email');
-    await report.populate('assignedTo', 'name email');
+    try {
+      await report.save();
+    } catch (saveError) {
+      console.error('Error saving report status:', saveError);
+      return res.status(400).json({ message: 'Validation error while saving status', error: saveError.message });
+    }
+    
+    // Consolidate populate calls into one for efficiency and reliability
+    try {
+      await report.populate([
+        { path: 'reportedBy', select: 'name email address' },
+        { path: 'resolvedBy', select: 'name email' },
+        { path: 'assignedTo', select: 'name email' }
+      ]);
+    } catch (popError) {
+      console.error('Error populating report after status update:', popError);
+      // We still return 200 because the save was successful
+    }
 
     res.status(200).json({
       success: true,
@@ -308,7 +330,7 @@ export const getReportStats = async (req, res) => {
     const totalReports = await WaterReport.countDocuments();
     const pendingReports = await WaterReport.countDocuments({ status: 'Reported' });
     const investigatingReports = await WaterReport.countDocuments({ status: 'In Progress' });
-    const resolvedReports = await WaterReport.countDocuments({ status: 'Fixed' });
+    const resolvedReports = await WaterReport.countDocuments({ status: { $in: ['Fixed', 'Resolved'] } });
     const criticalReports = await WaterReport.countDocuments({ severity: 'critical' });
 
     // Group by report type

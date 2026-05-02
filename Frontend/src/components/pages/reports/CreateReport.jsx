@@ -1,5 +1,5 @@
 import DashboardLayout from '../../layout/DashboardLayout'
-import { ArrowLeft, Send } from 'lucide-react'
+import { ArrowLeft, Send, Upload, X } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { useState } from 'react'
 import { toast } from 'react-toastify'
@@ -9,12 +9,34 @@ function CreateReport() {
   const navigate = useNavigate()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [imagePreview, setImagePreview] = useState(null)
   const [formData, setFormData] = useState({
-    title: '', description: '', severity: 'medium', location: '', reportType: ''
+    title: '', description: '', severity: 'medium', location: '', reportType: '', issueImage: null
   })
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value })
+  }
+
+  const handleImageChange = (e) => {
+    const file = e.target.files[0]
+    if (file) {
+      if (file.size > 5 * 1024 * 1024) {
+        toast.error('Image size should be less than 5MB')
+        return
+      }
+      setFormData({ ...formData, issueImage: file })
+      const reader = new FileReader()
+      reader.onloadend = () => {
+        setImagePreview(reader.result)
+      }
+      reader.readAsDataURL(file)
+    }
+  }
+
+  const removeImage = () => {
+    setFormData({ ...formData, issueImage: null })
+    setImagePreview(null)
   }
 
   const handleSubmit = async (e) => {
@@ -22,7 +44,18 @@ function CreateReport() {
     try {
       setLoading(true)
       setError('')
-      const res = await reportService.createReport(formData)
+      
+      const data = new FormData()
+      data.append('title', formData.title)
+      data.append('description', formData.description)
+      data.append('severity', formData.severity)
+      data.append('location', formData.location)
+      data.append('reportType', formData.reportType)
+      if (formData.issueImage) {
+        data.append('issueImage', formData.issueImage)
+      }
+
+      const res = await reportService.createReport(data)
       if (res.success) {
         toast.success('Report submitted successfully!')
         navigate('/reports/my-reports')
@@ -91,6 +124,33 @@ function CreateReport() {
           <div>
             <label className="block mb-2 text-sm font-semibold text-blue-950">Description</label>
             <textarea name="description" value={formData.description} onChange={handleChange} rows="5" className="w-full px-4 py-3 border-2 rounded-lg resize-none border-sky-200 focus:outline-none focus:border-sky-400" placeholder="Describe the issue in detail..." required />
+          </div>
+
+          <div>
+            <label className="block mb-2 text-sm font-semibold text-blue-950">Upload Picture (Optional)</label>
+            <div className="flex items-center gap-4">
+              <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer border-sky-200 bg-sky-50 hover:bg-sky-100 transition-all">
+                <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                  <Upload className="w-8 h-8 mb-3 text-sky-500" />
+                  <p className="mb-2 text-sm text-sky-600"><span className="font-semibold">Click to upload</span> or drag and drop</p>
+                  <p className="text-xs text-sky-500">PNG, JPG or JPEG (MAX. 5MB)</p>
+                </div>
+                <input type="file" className="hidden" accept="image/*" onChange={handleImageChange} />
+              </label>
+              
+              {imagePreview && (
+                <div className="relative w-32 h-32 overflow-hidden rounded-lg border-2 border-sky-200">
+                  <img src={imagePreview} alt="Preview" className="object-cover w-full h-full" />
+                  <button 
+                    type="button" 
+                    onClick={removeImage}
+                    className="absolute top-1 right-1 p-1 bg-red-500 text-white rounded-full hover:bg-red-600 transition-all"
+                  >
+                    <X size={14} />
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
 
           <div className="flex gap-4 pt-4">
