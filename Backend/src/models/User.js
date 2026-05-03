@@ -15,10 +15,18 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  zone: {
+// Replace the old 'zone' field with this:
+  supplyArea: {
     type: String,
-    enum: ['Zone A', 'Zone B (Central)', 'Zone C (Southern)', 'Zone D (Western)'],
-    default: 'Zone A'
+    enum: [
+      'Njoro Center', 
+      'Egerton University Area', 
+      'Kihingo Ward', 
+      'Lare Ward', 
+      'Nesuit', 
+      'Mau Narok'
+    ],
+    required: [true, 'Please select your specific water supply area'],
   },
   otp: { type: String, select: false },
   otpExpires: { type: Date, select: false },

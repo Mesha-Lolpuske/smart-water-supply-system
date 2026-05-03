@@ -25,10 +25,10 @@ import UnauthorizedPage from "./components/pages/Unauthorizedpage";
 import NotFoundPage from "./components/pages/NotFoundPage";
 
 // Dashboard Pages
-import UserDashboard from "./components/pages/dashboard/Userdashboard";
-import AdminDashboard from "./components/pages/dashboard/Admindashboard";
-import TechnicianDashboard from "./components/pages/dashboard/TechnicianDashboard";
-import StaffDirectory from "./components/pages/dashboard/StaffDirectory";
+import UserDashboard from "./components/pages/dashboard/user/Userdashboard";
+import AdminDashboard from "./components/pages/dashboard/admin/Admindashboard";
+import TechnicianDashboard from "./components/pages/dashboard/technician/TechnicianDashboard";
+import StaffDirectory from "./components/pages/dashboard/technician/StaffDirectory";
 
 // Schedule Pages
 import Schedules from "./components/pages/Schedules/Schedules";
@@ -61,7 +61,6 @@ import UserManagement from "./components/pages/admin/UserManagement";
 
 // New Analytics Report Pages
 import SystemReports from "./components/pages/System reports/SystemReports";
-import InteractiveGISMap from "./components/pages/maps/InteractiveGISMap";
 
 
 
@@ -342,14 +341,6 @@ function App() {
             <Route
               path="/admin/reports/announcement-categories"
               element={<Navigate to="/admin/reports/system?tab=announcements" replace />}
-            />
-            <Route
-              path="/admin/reports/interactive-gis-mapping"
-              element={
-                <AdminRoute>
-                  <InteractiveGISMap />
-                </AdminRoute>
-              }
             />
             {/* Admin - Announcements (full control) */}
             <Route

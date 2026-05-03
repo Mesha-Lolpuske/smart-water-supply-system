@@ -5,6 +5,7 @@ import { useState, useEffect } from "react";
 import { useAuth } from "../../hooks/useAuth";
 import { scheduleService } from "../../services/ScheduleService";
 import { toast } from "react-toastify";
+import { njoroAreas } from "../../utils/njoroData";
 
 function EditSchedule() {
   const navigate = useNavigate();
@@ -13,6 +14,7 @@ function EditSchedule() {
   const [formData, setFormData] = useState({
     title: "",
     description: "",
+    location: "",
     scheduleType: "",
     startDate: "",
     endDate: "",
@@ -205,6 +207,26 @@ function EditSchedule() {
               className="w-full px-4 py-3 border-2 rounded-lg border-sky-200 focus:outline-none focus:border-sky-400"
               required
             />
+          </div>
+
+          <div>
+            <label className="block mb-2 text-sm font-semibold text-blue-950">
+              Target Location / Zone
+            </label>
+            <select
+              name="location"
+              value={formData.location || ""}
+              onChange={handleChange}
+              className="w-full px-4 py-3 border-2 rounded-lg border-sky-200 focus:outline-none focus:border-sky-400"
+              required
+            >
+              <option value="">Select a zone...</option>
+              {njoroAreas.map((zone) => (
+                <option key={zone.id} value={zone.name}>
+                  {zone.name}
+                </option>
+              ))}
+            </select>
           </div>
 
           <div>

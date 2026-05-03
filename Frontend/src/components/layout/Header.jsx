@@ -14,7 +14,7 @@ function Header() {
   }
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 border-b-2 shadow-lg bg-gradient-to-r from-blue-950 to-blue-900 border-sky-400/30">
+    <header className="fixed top-0 left-0 right-0 z-[1100] border-b-2 shadow-lg bg-gradient-to-r from-blue-950 to-blue-900 border-sky-400/30">
       <div className="px-6 mx-auto max-w-7xl">
         <div className="flex items-center justify-between h-20">
           {/* Logo */}

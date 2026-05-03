@@ -3,14 +3,30 @@ import {
   getUserAnalytics,
   getIncidentAnalytics,
   getActivityAnalytics,
-  getDetailedReports
+  getDetailedReports,
+  getZoneStatus
 } from '../controllers/analyticsController.js';
 import { authenticateUser, adminOnly } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
 
-// Apply admin middleware to all routes
 router.use(authenticateUser);
+
+/**
+ * @swagger
+ * /api/analytics/zones/status:
+ *   get:
+ *     summary: Get real-time status of Njoro zones
+ *     tags: [Analytics]
+ *     security:
+ *       - cookieAuth: []
+ *     responses:
+ *       200:
+ *         description: Zone status data
+ */
+router.get('/zones/status', getZoneStatus);
+
+// Admin-only routes below
 router.use(adminOnly);
 
 /**

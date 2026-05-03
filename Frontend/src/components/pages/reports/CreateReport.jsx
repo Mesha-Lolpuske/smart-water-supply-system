@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom'
 import { useState } from 'react'
 import { toast } from 'react-toastify'
 import { reportService } from '../../services/reportService'
+import { njoroAreas } from '../../utils/njoroData'
 
 function CreateReport() {
   const navigate = useNavigate()
@@ -11,7 +12,13 @@ function CreateReport() {
   const [error, setError] = useState('')
   const [imagePreview, setImagePreview] = useState(null)
   const [formData, setFormData] = useState({
-    title: '', description: '', severity: 'medium', location: '', reportType: '', issueImage: null
+    title: '', 
+    description: '', 
+    severity: 'medium', 
+    supplyArea: '', // CHANGED: Replaced 'ward' with 'supplyArea'
+    specificLocation: '', 
+    reportType: '', 
+    issueImage: null
   })
 
   const handleChange = (e) => {
@@ -49,7 +56,8 @@ function CreateReport() {
       data.append('title', formData.title)
       data.append('description', formData.description)
       data.append('severity', formData.severity)
-      data.append('location', formData.location)
+      data.append('supplyArea', formData.supplyArea) // CHANGED: Appending 'supplyArea'
+      data.append('specificLocation', formData.specificLocation)
       data.append('reportType', formData.reportType)
       if (formData.issueImage) {
         data.append('issueImage', formData.issueImage)
@@ -106,9 +114,21 @@ function CreateReport() {
             <input type="text" name="title" value={formData.title} onChange={handleChange} className="w-full px-4 py-3 border-2 rounded-lg border-sky-200 focus:outline-none focus:border-sky-400" placeholder="Brief title of the issue" required />
           </div>
 
-          <div>
-            <label className="block mb-2 text-sm font-semibold text-blue-950">Location</label>
-            <input type="text" name="location" value={formData.location} onChange={handleChange} className="w-full px-4 py-3 border-2 rounded-lg border-sky-200 focus:outline-none focus:border-sky-400" placeholder="e.g., Westlands, House No. 123" required />
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+            <div>
+              <label className="block mb-2 text-sm font-semibold text-blue-950">Supply Area</label>
+              {/* CHANGED: name and value updated to supplyArea */}
+              <select name="supplyArea" value={formData.supplyArea} onChange={handleChange} className="w-full px-4 py-3 border-2 rounded-lg border-sky-200 focus:outline-none focus:border-sky-400" required>
+                <option value="">Select Supply Area...</option>
+                {njoroAreas.map(area => (
+                  <option key={area.id} value={area.name}>{area.name}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="block mb-2 text-sm font-semibold text-blue-950">Estate / House No.</label>
+              <input type="text" name="specificLocation" value={formData.specificLocation} onChange={handleChange} className="w-full px-4 py-3 border-2 rounded-lg border-sky-200 focus:outline-none focus:border-sky-400" placeholder="e.g., Eagle Estate, House 4B" required />
+            </div>
           </div>
 
           <div>
@@ -129,7 +149,7 @@ function CreateReport() {
           <div>
             <label className="block mb-2 text-sm font-semibold text-blue-950">Upload Picture (Optional)</label>
             <div className="flex items-center gap-4">
-              <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer border-sky-200 bg-sky-50 hover:bg-sky-100 transition-all">
+              <label className="flex flex-col items-center justify-center w-full h-32 transition-all border-2 border-dashed rounded-lg cursor-pointer border-sky-200 bg-sky-50 hover:bg-sky-100">
                 <div className="flex flex-col items-center justify-center pt-5 pb-6">
                   <Upload className="w-8 h-8 mb-3 text-sky-500" />
                   <p className="mb-2 text-sm text-sky-600"><span className="font-semibold">Click to upload</span> or drag and drop</p>
@@ -139,12 +159,12 @@ function CreateReport() {
               </label>
               
               {imagePreview && (
-                <div className="relative w-32 h-32 overflow-hidden rounded-lg border-2 border-sky-200">
+                <div className="relative w-32 h-32 overflow-hidden border-2 rounded-lg border-sky-200">
                   <img src={imagePreview} alt="Preview" className="object-cover w-full h-full" />
                   <button 
                     type="button" 
                     onClick={removeImage}
-                    className="absolute top-1 right-1 p-1 bg-red-500 text-white rounded-full hover:bg-red-600 transition-all"
+                    className="absolute p-1 text-white transition-all bg-red-500 rounded-full top-1 right-1 hover:bg-red-600"
                   >
                     <X size={14} />
                   </button>

@@ -5,13 +5,15 @@ import {
   clearTokenCookie,
 } from "../utils/jwt.js";
 import { generateOTP, getOTPExpiry } from "../utils/otp.js";
-import { sendOTPEmail } from "../config/nodemailer.js"; // ONLY import email
+import { sendOTPEmail } from "../config/nodemailer.js"; 
+import { sendSMS } from "../utils/sms.js"; // Maji Track SMS Service
 import bcrypt from "bcryptjs";
 
 // Register User
 export const register = async (req, res) => {
   try {
-    const { name, email, password, address, phone } = req.body;
+    // 1. Extracted supplyArea from the request body
+    const { name, email, password, address, phone, supplyArea } = req.body;
 
     // Check if user exists
     const userExists = await User.findOne({ email });
@@ -24,31 +26,37 @@ export const register = async (req, res) => {
       return res.status(400).json({ message: "Phone number is required" });
     }
 
+    // 2. Added validation for the new supplyArea field
+    if (!supplyArea) {
+      return res.status(400).json({ message: "Please select your water supply area" });
+    }
+
     const hashedPassword = await bcrypt.hash(password, 10);
 
     // Generate OTPs
     const otp = generateOTP();
     const otpExpires = getOTPExpiry();
 
-    // Create user
+    // 3. Saved supplyArea to the database
     const user = await User.create({
       name,
       email,
       phone,
-      password,
+      password: hashedPassword, // Ensure we are saving the hashed password
       role: "user",
       address,
+      supplyArea, 
       otp,
       otpExpires,
       isVerified: false,
     });
 
-   console.log("Sending verification code to:", user.email);
+    console.log("Sending Maji Track verification codes to:", user.email, "and", user.phone);
 
-    // Send OTP via email ONLY for now
+    // Send OTP via email 
     const emailResult = await sendOTPEmail(user.email, otp, user.name);
     
-    // Check if email failed
+    // Check if email failed - we block if email fails as it's our primary channel
     if (!emailResult.success) {
       console.error("Email sending failed:", emailResult.error);
       return res.status(500).json({
@@ -56,9 +64,17 @@ export const register = async (req, res) => {
       });
     }
 
+    // Send OTP via SMS
+    if (user.phone) {
+      const smsMessage = `Hello ${user.name}, your Maji Track verification code is: ${otp}`;
+      const smsResult = await sendSMS(user.phone, smsMessage);
+      if (!smsResult.success) {
+        console.warn("SMS sending failed (User still registered via email):", smsResult.error);
+      }
+    }
+
     res.status(201).json({
-      message:
-        "Registration successful! Please check your email for OTP verification.",
+      message: "Registration successful! Please check your email and phone for OTP verification.",
       userId: user._id,
     });
   } catch (error) {
@@ -86,7 +102,7 @@ export const verifyOTP = async (req, res) => {
       return res.status(400).json({ message: "User already verified" });
     }
 
-    // Default to email OTP
+    // Unified check for the same OTP sent to both channels
     if (user.otp !== otp) {
       return res.status(400).json({ message: "Invalid verification code" });
     }
@@ -114,6 +130,7 @@ export const verifyOTP = async (req, res) => {
         email: user.email,
         role: user.role,
         address: user.address,
+        supplyArea: user.supplyArea, // 4. Included supplyArea in the verified response
       },
     });
   } catch (error) {
@@ -121,7 +138,6 @@ export const verifyOTP = async (req, res) => {
     res.status(500).json({ message: "Server error", error: error.message });
   }
 };
-
 
 // Resend OTP
 export const resendOTP = async (req, res) => {
@@ -154,10 +170,12 @@ export const resendOTP = async (req, res) => {
     user.otpExpires = otpExpires;
     await user.save();
 
+    // Attempt to resend to both channels
     const emailResult = await sendOTPEmail(user.email, otp, user.name);
     
     if (user.phone) {
-      await sendOTPSMS(user.phone, otp);
+      const smsMessage = `Hello ${user.name}, your Maji Track verification code is: ${otp}`;
+      await sendSMS(user.phone, smsMessage);
     }
 
     if (!emailResult.success) {
@@ -165,15 +183,13 @@ export const resendOTP = async (req, res) => {
     }
 
     res.status(200).json({
-      message: `OTP resent successfully to your email and phone`
+      message: `Maji Track OTP resent successfully to your email and phone`
     });
   } catch (error) {
     console.log("Resend OTP error:", error);
     res.status(500).json({ message: "Server error", error: error.message });
   }
 };
-
-
 
 // Login User
 export const login = async (req, res) => {
@@ -213,6 +229,7 @@ export const login = async (req, res) => {
         email: user.email,
         role: user.role,
         address: user.address,
+        supplyArea: user.supplyArea, // 5. Included supplyArea in the login response
       },
     });
   } catch (error) {

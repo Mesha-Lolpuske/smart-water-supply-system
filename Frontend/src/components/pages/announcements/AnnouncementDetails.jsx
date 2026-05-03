@@ -1,5 +1,5 @@
 import DashboardLayout from '../../layout/DashboardLayout'
-import { ArrowLeft, Edit, Trash2, Calendar, User, AlertCircle } from 'lucide-react'
+import { ArrowLeft, Edit, Trash2, Calendar, User, AlertCircle, Map } from 'lucide-react'
 import { useNavigate, useParams, useLocation } from 'react-router-dom'
 
 function AnnouncementDetails() {
@@ -9,16 +9,19 @@ function AnnouncementDetails() {
 
   const isAdmin = location.pathname.startsWith('/admin')
 
+  // NOTE: This is currently dummy data. In a real app, you would fetch this from your backend using the 'id'.
   const announcement = {
     id,
     title: 'Water Shortage Alert',
     type: 'alert',
     urgent: true,
-    content: 'Limited water supply is expected in Zone A for the next 48 hours due to maintenance work on the main distribution line. We recommend residents store water for essential use and minimize non-essential consumption during this period.',
+    // 1. Updated content text
+    content: 'Limited water supply is expected in the Egerton University Area for the next 48 hours due to maintenance work on the main distribution line. We recommend residents store water for essential use and minimize non-essential consumption during this period.',
     author: 'Admin User',
     createdAt: 'Today at 2:30 PM',
     updatedAt: 'Today at 3:15 PM',
-    affectedZones: ['Zone A', 'Zone B'],
+    // 2. Renamed and updated array
+    affectedAreas: ['Egerton University Area', 'Njoro Center'], 
     views: 1250
   }
 
@@ -81,17 +84,22 @@ function AnnouncementDetails() {
 
         <div className="grid grid-cols-2 gap-6 mb-8">
           <div className="p-4 border-2 rounded-lg bg-gradient-to-br from-sky-50 to-blue-50 border-sky-200">
-            <p className="mb-2 text-sm text-slate-600">Affected Zones</p>
+            {/* 3. Updated UI Label */}
+            <p className="flex items-center gap-2 mb-2 text-sm font-semibold text-slate-600">
+              <Map size={16} />
+              Affected Supply Areas
+            </p>
             <div className="flex flex-wrap gap-2">
-              {announcement.affectedZones.map((zone, idx) => (
+              {/* 4. Mapped over the new affectedAreas array */}
+              {announcement.affectedAreas.map((area, idx) => (
                 <span key={idx} className="px-3 py-1 text-sm font-semibold bg-white border rounded-full text-sky-700 border-sky-300">
-                  {zone}
+                  {area}
                 </span>
               ))}
             </div>
           </div>
           <div className="p-4 border-2 rounded-lg bg-gradient-to-br from-emerald-50 to-green-50 border-emerald-200">
-            <p className="mb-2 text-sm text-slate-600">Views</p>
+            <p className="mb-2 text-sm font-semibold text-slate-600">Total Views</p>
             <p className="text-3xl font-bold text-emerald-600">{announcement.views.toLocaleString()}</p>
           </div>
         </div>

@@ -23,6 +23,12 @@ export const analyticsService = {
   getDetailedReports: async () => {
     const response = await api.get('/analytics/detailed-reports');
     return response.data;
+  },
+
+  // Report 5: Real-time Zone Status
+  getZoneStatus: async () => {
+    const response = await api.get('/analytics/zones/status');
+    return response.data;
   }
 }
 

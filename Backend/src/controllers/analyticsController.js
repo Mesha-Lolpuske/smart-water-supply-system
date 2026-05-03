@@ -7,6 +7,74 @@ import Notification from '../models/notification.js';
 // @desc    Get user analytics
 // @route   GET /api/analytics/user-analytics
 // @access  Admin only
+/**
+ * Get real-time status of Njoro zones
+ */
+export const getZoneStatus = async (req, res) => {
+  try {
+    const zones = [
+      'Njoro Center',
+      'Egerton University Area',
+      'Kihingo Ward',
+      'Lare Ward',
+      'Nesuit',
+      'Mau Narok'
+    ];
+
+    const [activeReports, activeSchedules] = await Promise.all([
+      WaterReport.find({ status: { $nin: ['Fixed', 'Resolved', 'Cancelled'] } }),
+      WaterSchedule.find({ isActive: true })
+    ]);
+
+    const zoneStatuses = zones.map(zoneName => {
+      // CHANGED: Use supplyArea instead of ward/location
+      const zoneReports = activeReports.filter(r => r.supplyArea === zoneName);
+      const zoneSchedules = activeSchedules.filter(s => s.supplyArea === zoneName);
+
+      let status = 'good'; // Default
+      let reason = 'System operational';
+
+      // 1. Check for Critical Reports (Highest Priority - e.g., "No Water")
+      const criticalReport = zoneReports.find(r => r.severity === 'critical' || r.reportType === 'outage');
+      if (criticalReport) {
+        status = 'critical'; // Turns map RED
+        reason = `Critical Incident: ${criticalReport.title}`;
+      } 
+      // 2. Check for Emergency Schedules
+      else if (zoneSchedules.find(s => s.scheduleType === 'emergency')) {
+        status = 'critical'; // Turns map RED
+        reason = 'Emergency Supply Cut';
+      }
+      // 3. Check for Warning Reports
+      else if (zoneReports.find(r => ['high', 'medium', 'low'].includes(r.severity))) {
+        status = 'warning'; // Turns map YELLOW
+        reason = 'Active Maintenance Required';
+      }
+      // 4. Check for Rationing Schedules
+      else if (zoneSchedules.find(s => ['rationing', 'maintenance'].includes(s.scheduleType))) {
+        status = 'warning'; // Turns map YELLOW
+        reason = 'Scheduled Rationing/Maintenance';
+      }
+
+      return {
+        name: zoneName,
+        status,
+        reason,
+        reportCount: zoneReports.length,
+        activeSchedules: zoneSchedules.length
+      };
+    });
+
+    res.status(200).json({
+      success: true,
+      data: zoneStatuses
+    });
+  } catch (error) {
+    console.error('Error fetching zone status:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
 export const getUserAnalytics = async (req, res) => {
   try {
     // Role distribution
@@ -110,9 +178,9 @@ export const getIncidentAnalytics = async (req, res) => {
       reports: item.count
     }));
 
-    // Incident List for Table
+    // Incident List for Table - CHANGED location to supplyArea
     const incidentList = await WaterReport.find()
-      .select('title reportType severity status createdAt location')
+      .select('title reportType severity status createdAt supplyArea specificLocation')
       .sort({ createdAt: -1 });
 
     res.status(200).json({
@@ -146,9 +214,9 @@ export const getActivityAnalytics = async (req, res) => {
       { $group: { _id: '$type', count: { $sum: 1 } } }
     ]);
 
-    // Schedules by location (top 10)
+    // Schedules by location (top 10) - CHANGED location to supplyArea
     const schedulesByLocation = await WaterSchedule.aggregate([
-      { $group: { _id: '$location', count: { $sum: 1 } } },
+      { $group: { _id: '$supplyArea', count: { $sum: 1 } } },
       { $sort: { count: -1 } },
       { $limit: 10 }
     ]);
@@ -172,12 +240,12 @@ export const getActivityAnalytics = async (req, res) => {
 // @access  Admin only
 export const getDetailedReports = async (req, res) => {
   try {
-    // 1. Maintenance Ticketing Logs: Outages with date, area, and assigned technician
+    // 1. Maintenance Ticketing Logs - CHANGED location to supplyArea
     const maintenanceLogs = await WaterReport.find({ reportType: 'outage' })
       .sort({ createdAt: -1 })
       .limit(50)
       .populate('assignedTo', 'name')
-      .select('title createdAt location status assignedTo');
+      .select('title createdAt supplyArea status assignedTo');
 
     // 2. Technician Performance Roster
     const technicians = await User.find({ role: 'technician' }).select('name');
@@ -198,10 +266,10 @@ export const getDetailedReports = async (req, res) => {
     
     const technicianPerformance = await Promise.all(performancePromises);
 
-    // 3. Water Distribution Schedules: Structured timetable
+    // 3. Water Distribution Schedules - CHANGED location to supplyArea
     const waterSchedules = await WaterSchedule.find({ isActive: true })
       .sort({ title: 1 })
-      .select('title location scheduleType daysOfWeek startTime endTime');
+      .select('title supplyArea scheduleType daysOfWeek startTime endTime');
 
     res.status(200).json({
       success: true,

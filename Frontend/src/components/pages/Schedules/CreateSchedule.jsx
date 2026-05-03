@@ -5,6 +5,7 @@ import { useState } from 'react'
 import { useAuth } from '../../hooks/useAuth'
 import { scheduleService } from '../../services/ScheduleService'
 import { toast } from "react-toastify";
+import { njoroAreas } from '../../utils/njoroData'
 
 function CreateSchedule() {
   const navigate = useNavigate()
@@ -12,9 +13,10 @@ function CreateSchedule() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [formData, setFormData] = useState({
-    
     title: '', 
     description: '',
+    // CHANGED: Replaced 'location' with 'supplyArea'
+    supplyArea: '', 
     scheduleType: 'regular', 
     startDate: '', 
     endDate: '', 
@@ -127,12 +129,23 @@ function CreateSchedule() {
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
             <label className="block mb-2 text-sm font-semibold text-blue-950">Schedule Title</label>
-            <input type="text" name="title" value={formData.title} onChange={handleChange} className="w-full px-4 py-3 border-2 rounded-lg border-sky-200 focus:outline-none focus:border-sky-400" placeholder="e.g., Morning Supply - Westlands" required />
+            <input type="text" name="title" value={formData.title} onChange={handleChange} className="w-full px-4 py-3 border-2 rounded-lg border-sky-200 focus:outline-none focus:border-sky-400" placeholder="e.g., Morning Supply - Egerton Area" required />
           </div>
 
           <div>
             <label className="block mb-2 text-sm font-semibold text-blue-950">Description</label>
             <textarea name="description" value={formData.description} onChange={handleChange} className="w-full px-4 py-3 border-2 rounded-lg border-sky-200 focus:outline-none focus:border-sky-400" placeholder="Details about this schedule..." required />
+          </div>
+
+          <div>
+            {/* CHANGED: Updated label and input name/value to supplyArea */}
+            <label className="block mb-2 text-sm font-semibold text-blue-950">Target Supply Area</label>
+            <select name="supplyArea" value={formData.supplyArea} onChange={handleChange} className="w-full px-4 py-3 border-2 rounded-lg border-sky-200 focus:outline-none focus:border-sky-400" required>
+              <option value="">Select a supply area...</option>
+              {njoroAreas.map(area => (
+                <option key={area.id} value={area.name}>{area.name}</option>
+              ))}
+            </select>
           </div>
 
           <div>

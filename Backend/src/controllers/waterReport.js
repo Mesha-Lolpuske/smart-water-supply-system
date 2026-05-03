@@ -6,10 +6,11 @@ import WaterReport from '../models/WaterReport.js';
 // @access  Private (authenticated users)
 export const createReport = async (req, res) => {
   try {
-    const { reportType, title, description, location, severity } = req.body;
+    // CHANGED: Extract supplyArea
+    const { reportType, title, description, supplyArea, specificLocation, severity } = req.body;
 
-    // Validation
-    if (!reportType || !title || !description || !location) {
+    // CHANGED: Validation checks for supplyArea
+    if (!reportType || !title || !description || !supplyArea || !specificLocation) {
       return res.status(400).json({ message: 'Please provide all required fields' });
     }
 
@@ -17,7 +18,8 @@ export const createReport = async (req, res) => {
       reportType,
       title,
       description,
-      location,
+      supplyArea, // CHANGED: Saved as supplyArea
+      specificLocation,
       severity: severity || 'medium',
       reportedBy: req.user.id,
       issueImage: req.file ? `/uploads/reports/${req.file.filename}` : ''
@@ -142,6 +144,13 @@ export const updateReportStatus = async (req, res) => {
       return res.status(400).json({ message: 'Please provide a status' });
     }
 
+    // SECURITY: Only admins can mark an issue as FIXED or RESOLVED
+    if ((status === 'Fixed' || status === 'Resolved') && req.user.role !== 'admin') {
+      return res.status(403).json({ 
+        message: 'Security Violation: Only Administrators can officially declare an issue as Fixed.' 
+      });
+    }
+
     const report = await WaterReport.findById(req.params.id);
 
     if (!report) {
@@ -255,7 +264,8 @@ export const getAssignedReports = async (req, res) => {
 // @access  Private
 export const updateReport = async (req, res) => {
   try {
-    const { reportType, title, description, location, severity } = req.body;
+    // CHANGED: Update from location to supplyArea
+    const { reportType, title, description, supplyArea, severity } = req.body;
 
     const report = await WaterReport.findById(req.params.id);
 
@@ -269,7 +279,7 @@ export const updateReport = async (req, res) => {
     }
 
     // Users can only update pending reports, admins can update any
-    if (report.status !== 'pending' && req.user.role !== 'admin') {
+    if (report.status !== 'Reported' && req.user.role !== 'admin') {
       return res.status(400).json({ message: 'Cannot update report that is already being processed' });
     }
 
@@ -277,7 +287,8 @@ export const updateReport = async (req, res) => {
     if (reportType) report.reportType = reportType;
     if (title) report.title = title;
     if (description) report.description = description;
-    if (location) report.location = location;
+    // CHANGED: Apply supplyArea
+    if (supplyArea) report.supplyArea = supplyArea;
     if (severity) report.severity = severity;
 
     await report.save();

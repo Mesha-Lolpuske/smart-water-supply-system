@@ -1,9 +1,10 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Mail, Lock, User, MapPin, Eye, EyeOff, Phone } from 'lucide-react'
+import { Mail, Lock, User, MapPin, Map, Eye, EyeOff, Phone } from 'lucide-react' // Added Map icon
 import authService from '../../services/authService'
 import { validatePassword } from '../../utils/validation'
 import { PasswordStrengthBar } from '../../utils/PasswordStrengthBar'
+
 function RegisterPage() {
   const navigate = useNavigate()
   const [showPassword, setShowPassword] = useState(false)
@@ -16,6 +17,7 @@ function RegisterPage() {
     email: '',
     phone: '',
     address: '',
+    supplyArea: '', // 1. Added supplyArea to state
     password: '',
     confirmPassword: ''
   })
@@ -40,12 +42,14 @@ function RegisterPage() {
     
     console.log('🚀 Registering user...')
     
+    // 2. Included supplyArea in the API payload
     const result = await authService.register({
       name: formData.name,
       email: formData.email,
       phone: formData.phone,
       password: formData.password,
-      address: formData.address
+      address: formData.address,
+      supplyArea: formData.supplyArea 
     })
     
     console.log('📡 Response:', result)
@@ -145,7 +149,7 @@ function RegisterPage() {
               </div>
 
               <div>
-                <label className="block mb-2 text-sm font-medium text-sky-300">Address</label>
+                <label className="block mb-2 text-sm font-medium text-sky-300">Specific Address</label>
                 <div className="relative">
                   <MapPin className="absolute text-blue-300 left-3 top-3.5" size={20} />
                   <input
@@ -153,9 +157,31 @@ function RegisterPage() {
                     required
                     value={formData.address}
                     onChange={(e) => setFormData({...formData, address: e.target.value})}
-                    placeholder="123 Main Street, Nairobi"
+                    placeholder="e.g. Njokerio, Plot 45 or Near Post Office"
                     className="w-full py-3 pl-10 pr-4 text-white placeholder-blue-300 transition border rounded-lg bg-white/10 border-sky-400/30 focus:outline-none focus:border-sky-400"
                   />
+                </div>
+              </div>
+
+              {/* 3. New Supply Area Dropdown */}
+              <div>
+                <label className="block mb-2 text-sm font-medium text-sky-300">Water Supply Area</label>
+                <div className="relative">
+                  <Map className="absolute text-blue-300 left-3 top-3.5" size={20} />
+                  <select
+                    required
+                    value={formData.supplyArea}
+                    onChange={(e) => setFormData({...formData, supplyArea: e.target.value})}
+                    className="w-full py-3 pl-10 pr-4 text-white transition border rounded-lg appearance-none bg-blue-900/50 border-sky-400/30 focus:outline-none focus:border-sky-400"
+                  >
+                    <option value="" disabled className="text-gray-400">-- Select Njoro Area --</option>
+                    <option value="Njoro Center" className="text-blue-900 bg-white">Njoro Center</option>
+                    <option value="Egerton University Area" className="text-blue-900 bg-white">Egerton University Area</option>
+                    <option value="Kihingo Ward" className="text-blue-900 bg-white">Kihingo Ward</option>
+                    <option value="Lare Ward" className="text-blue-900 bg-white">Lare Ward</option>
+                    <option value="Nesuit" className="text-blue-900 bg-white">Nesuit</option>
+                    <option value="Mau Narok" className="text-blue-900 bg-white">Mau Narok</option>
+                  </select>
                 </div>
               </div>
 
@@ -166,7 +192,7 @@ function RegisterPage() {
                   <input
                     type={showPassword ? "text" : "password"}
                     name="password"
-                    autocomplete="new-password"
+                    autoComplete="new-password"
                     required
                     value={formData.password}
                     onChange={(e) => setFormData({...formData, password: e.target.value})}

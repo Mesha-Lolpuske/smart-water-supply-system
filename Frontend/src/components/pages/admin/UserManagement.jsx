@@ -9,7 +9,8 @@ function UserManagement() {
   const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
   const [roleFilter, setRoleFilter] = useState('all')
-  const [editForm, setEditForm] = useState({ name: '', email: '', role: '', phone: '', zone: '' })
+  // 1. Updated editForm state to use supplyArea instead of zone
+  const [editForm, setEditForm] = useState({ name: '', email: '', role: '', phone: '', supplyArea: '' })
   const [editingUser, setEditingUser] = useState(null)
 
   useEffect(() => {
@@ -39,12 +40,14 @@ function UserManagement() {
           setUsers(users.filter(u => u._id !== id))
           toast.success('User deleted successfully')
         }
+      // eslint-disable-next-line no-unused-vars
       } catch (error) {
         toast.error('Failed to delete user')
       }
     }
   }
 
+  // eslint-disable-next-line no-unused-vars
   const handleUpdateRole = async (id, newRole) => {
     try {
       const res = await userService.updateUserRole(id, newRole)
@@ -52,6 +55,7 @@ function UserManagement() {
         setUsers(users.map(u => u._id === id ? { ...u, role: newRole } : u))
         toast.success(`User role updated to ${newRole}`)
       }
+    // eslint-disable-next-line no-unused-vars
     } catch (error) {
       toast.error('Failed to update user role')
     }
@@ -64,7 +68,8 @@ function UserManagement() {
       email: user.email, 
       role: user.role, 
       phone: user.phone || '', 
-      zone: user.zone || 'Zone A' 
+      // 2. Map supplyArea to the edit form with a default fallback
+      supplyArea: user.supplyArea || 'Njoro Center' 
     })
   }
 
@@ -166,7 +171,8 @@ function UserManagement() {
             <thead>
               <tr className="bg-slate-50 border-b border-slate-200">
                 <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-500">Citizen / Staff</th>
-                <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-500">Contact / Zone</th>
+                {/* 3. Updated Table Header */}
+                <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-500">Contact / Area</th>
                 <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-500">System Role</th>
                 <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-500">Reports</th>
                 <th className="px-6 py-4 text-right text-[10px] font-black uppercase tracking-widest text-slate-500">Actions</th>
@@ -226,21 +232,25 @@ function UserManagement() {
                             className="w-full px-3 py-1.5 text-sm border-2 border-blue-200 rounded-lg focus:border-blue-500 outline-none"
                             placeholder="Phone Number"
                           />
+                          {/* 4. Updated Dropdown to Njoro areas */}
                           <select
-                            value={editForm.zone}
-                            onChange={(e) => setEditForm({...editForm, zone: e.target.value})}
+                            value={editForm.supplyArea}
+                            onChange={(e) => setEditForm({...editForm, supplyArea: e.target.value})}
                             className="w-full px-3 py-1.5 text-sm border-2 border-blue-200 rounded-lg focus:border-blue-500 outline-none"
                           >
-                            <option value="Zone A">Zone A</option>
-                            <option value="Zone B (Central)">Zone B (Central)</option>
-                            <option value="Zone C (Southern)">Zone C (Southern)</option>
-                            <option value="Zone D (Western)">Zone D (Western)</option>
+                            <option value="Njoro Center">Njoro Center</option>
+                            <option value="Egerton University Area">Egerton University Area</option>
+                            <option value="Kihingo Ward">Kihingo Ward</option>
+                            <option value="Lare Ward">Lare Ward</option>
+                            <option value="Nesuit">Nesuit</option>
+                            <option value="Mau Narok">Mau Narok</option>
                           </select>
                         </div>
                       ) : (
                         <div>
                           <p className="text-sm font-bold text-blue-950">{user.phone || 'No phone'}</p>
-                          <p className="text-[10px] font-black text-sky-600 uppercase tracking-widest">{user.zone || 'No Zone'}</p>
+                          {/* 5. Display the new supplyArea instead of zone */}
+                          <p className="text-[10px] font-black text-sky-600 uppercase tracking-widest">{user.supplyArea || 'No Area'}</p>
                         </div>
                       )}
                     </td>

@@ -1,4 +1,3 @@
-// models/WaterReport.js
 import mongoose from 'mongoose';
 
 const waterReportSchema = new mongoose.Schema({
@@ -16,9 +15,24 @@ const waterReportSchema = new mongoose.Schema({
     type: String,
     required: true
   },
-  location: {
+  // CHANGED: renamed from 'ward' to 'supplyArea' and added the Njoro enum
+  supplyArea: {
     type: String,
-    required: true
+    required: [true, 'Supply area is required'],
+    trim: true,
+    enum: [
+      'Njoro Center', 
+      'Egerton University Area', 
+      'Kihingo Ward', 
+      'Lare Ward', 
+      'Nesuit', 
+      'Mau Narok'
+    ]
+  },
+  specificLocation: {
+    type: String,
+    required: true,
+    trim: true
   },
   severity: {
     type: String,
@@ -71,6 +85,7 @@ const waterReportSchema = new mongoose.Schema({
     default: Date.now
   }
 });
+
 
 // Update the updatedAt timestamp before saving
 waterReportSchema.pre('save', function () {

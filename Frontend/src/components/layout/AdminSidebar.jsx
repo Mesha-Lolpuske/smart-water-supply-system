@@ -38,7 +38,6 @@ function AdminSidebar() {
   // ✅ NEW: System Reports menu items
   const systemReportItems = [
     { icon: BarChart3, label: 'System Analytics', path: '/admin/reports/system' },
-    { icon: Map, label: 'Interactive GIS Mapping', path: '/admin/reports/interactive-gis-mapping' },
   ]
 
   const bottomItems = [
@@ -56,7 +55,7 @@ function AdminSidebar() {
   }
 
   return (
-    <aside className="fixed left-0 z-40 w-64 h-screen pt-20 transition-all bg-white border-r border-slate-200 shadow-[4px_0_24px_rgba(0,0,0,0.02)]">
+    <aside className="fixed left-0 z-[1050] w-64 h-screen pt-20 transition-all bg-white border-r border-slate-200 shadow-[4px_0_24px_rgba(0,0,0,0.02)]">
       <div className="flex flex-col h-full px-4 pb-6 overflow-y-auto">
         
         {/* Admin Profile Summary */}

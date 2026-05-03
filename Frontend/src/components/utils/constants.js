@@ -37,7 +37,8 @@ export const ANNOUNCEMENT_TYPES = {
 // User Roles
 export const USER_ROLES = {
   USER: 'user',
-  ADMIN: 'admin'
+  ADMIN: 'admin',
+  TECHNICIAN: 'technician'
 }
 
 // Notification Types
@@ -53,12 +54,12 @@ export const NOTIFICATION_TYPES = {
 
 // Zones
 export const ZONES = [
-  'Westlands',
-  'Kilimani',
-  'CBD',
-  'Karen',
-  'Lavington',
-  'Parklands'
+  'Njoro Center',
+  'Egerton University Area',
+  'Kihingo Ward',
+  'Lare Ward',
+  'Nesuit',
+  'Mau Narok'
 ]
 
 // Days of Week

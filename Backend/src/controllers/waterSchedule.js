@@ -1,4 +1,3 @@
-
 import WaterSchedule from '../models/WaterSchedule.js';
 
 // @desc    Create a new water schedule
@@ -6,11 +5,12 @@ import WaterSchedule from '../models/WaterSchedule.js';
 // @access  Admin only
 export const createSchedule = async (req, res) => {
   try {
-    const { title, description, scheduleType, startDate, endDate, startTime, endTime, daysOfWeek } = req.body;
+    // ADDED: supplyArea extracted from request body
+    const { title, description, supplyArea, scheduleType, startDate, endDate, startTime, endTime, daysOfWeek } = req.body;
 
-    // Validation
-    if (!title || !description || !startDate || !endDate || !startTime || !endTime) {
-      return res.status(400).json({ message: 'Please provide all required fields' });
+    // Validation - ADDED supplyArea to required fields check
+    if (!title || !description || !supplyArea || !startDate || !endDate || !startTime || !endTime) {
+      return res.status(400).json({ message: 'Please provide all required fields, including Supply Area' });
     }
 
     // Check if end date is after start date
@@ -21,6 +21,7 @@ export const createSchedule = async (req, res) => {
     const schedule = await WaterSchedule.create({
       title,
       description,
+      supplyArea, // ADDED to creation payload
       scheduleType,
       startDate,
       endDate,
@@ -125,7 +126,8 @@ export const getScheduleById = async (req, res) => {
 // @access  Admin only
 export const updateSchedule = async (req, res) => {
   try {
-    const { title, description, scheduleType, startDate, endDate, startTime, endTime, daysOfWeek, isActive } = req.body;
+    // ADDED: supplyArea
+    const { title, description, supplyArea, scheduleType, startDate, endDate, startTime, endTime, daysOfWeek, isActive } = req.body;
 
     let schedule = await WaterSchedule.findById(req.params.id);
 
@@ -141,9 +143,10 @@ export const updateSchedule = async (req, res) => {
       return res.status(400).json({ message: 'End date must be after start date' });
     }
 
-    // Update fields
+    // Update fields including the new supplyArea
     schedule.title = title || schedule.title;
     schedule.description = description || schedule.description;
+    schedule.supplyArea = supplyArea || schedule.supplyArea; // ADDED
     schedule.scheduleType = scheduleType || schedule.scheduleType;
     schedule.startDate = startDate || schedule.startDate;
     schedule.endDate = endDate || schedule.endDate;

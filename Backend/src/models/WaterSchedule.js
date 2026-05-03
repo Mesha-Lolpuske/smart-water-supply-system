@@ -1,4 +1,3 @@
-
 import mongoose from 'mongoose';
 
 const waterScheduleSchema = new mongoose.Schema({
@@ -10,6 +9,20 @@ const waterScheduleSchema = new mongoose.Schema({
   description: {
     type: String,
     required: true
+  },
+  // CHANGED: Renamed from 'location' to 'supplyArea' and added the Njoro enum
+  supplyArea: {
+    type: String,
+    required: [true, 'Supply area is required'],
+    trim: true,
+    enum: [
+      'Njoro Center', 
+      'Egerton University Area', 
+      'Kihingo Ward', 
+      'Lare Ward', 
+      'Nesuit', 
+      'Mau Narok'
+    ]
   },
   scheduleType: {
     type: String,
@@ -56,8 +69,10 @@ const waterScheduleSchema = new mongoose.Schema({
 });
 
 // Update the updatedAt timestamp before saving
+// Update the updatedAt timestamp before saving
 waterScheduleSchema.pre('save', function () {
   this.updatedAt = Date.now();
 });
+
 
 export default mongoose.model('WaterSchedule', waterScheduleSchema);

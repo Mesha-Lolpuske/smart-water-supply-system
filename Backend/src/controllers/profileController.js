@@ -27,7 +27,8 @@ export const getProfile = async (req, res) => {
  */
 export const updateProfile = async (req, res) => {
   try {
-    const { name, address, phone, zone } = req.body;
+    // 1. Changed zone to supplyArea
+    const { name, address, phone, supplyArea } = req.body;
 
     const user = await User.findById(req.user.id);
 
@@ -38,7 +39,8 @@ export const updateProfile = async (req, res) => {
     if (name) user.name = name;
     if (address) user.address = address;
     if (phone) user.phone = phone;
-    if (zone) user.zone = zone;
+    // 2. Updated the assignment
+    if (supplyArea) user.supplyArea = supplyArea;
 
     await user.save();
 
@@ -51,7 +53,8 @@ export const updateProfile = async (req, res) => {
         email: user.email,
         phone: user.phone,
         address: user.address,
-        zone: user.zone
+        // 3. Updated the response payload
+        supplyArea: user.supplyArea
       }
     });
   } catch (error) {

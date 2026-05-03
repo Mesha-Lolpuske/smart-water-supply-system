@@ -256,6 +256,7 @@ function SystemReports() {
   const renderIncidentsReport = () => {
     const severity = data.incidents?.severityDistribution || []
     const categories = data.incidents?.categoryDistribution || []
+    const status = data.incidents?.statusDistribution || []
     const trend = data.incidents?.incidentTrend || []
     const incidentList = data.incidents?.incidentList || []
     const total = incidentList.length || severity.reduce((s, i) => s + (i.count || 0), 0)
@@ -267,6 +268,14 @@ function SystemReports() {
       low: '#10b981'
     }
 
+    const STATUS_COLORS = {
+      'Reported': '#f97316',
+      'Technician Assigned': '#3b82f6',
+      'In Progress': '#0ea5e9',
+      'Fixed': '#10b981',
+      'Resolved': '#059669'
+    }
+
     const CAT_COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#64748b']
 
     return (
@@ -274,11 +283,52 @@ function SystemReports() {
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
           <MetricCard icon={AlertTriangle} label="Total Incidents" value={total} subtext="Reported issues" colorClass="bg-orange-500" />
           <MetricCard icon={XCircle} label="Critical" value={severity.find(s => s._id === 'critical')?.count || 0} subtext="Urgent attention needed" colorClass="bg-red-600" />
-          <MetricCard icon={Clock} label="Pending" value={total - (severity.find(s => s._id === 'low')?.count || 0)} subtext="Requiring action" colorClass="bg-amber-500" />
-          <MetricCard icon={Activity} label="Monthly Rate" value={trend[trend.length-1]?.reports || 0} subtext="Recent volume" colorClass="bg-blue-600" />
+          <MetricCard icon={Clock} label="Pending" value={total - (status.find(s => s._id === 'Resolved')?.count || 0)} subtext="Requiring action" colorClass="bg-amber-500" />
+          <MetricCard icon={Activity} label="Latest Daily" value={trend[trend.length-1]?.reports || 0} subtext="Recent volume" colorClass="bg-blue-600" />
         </div>
 
         <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
+          {trend.length > 0 && (
+            <ChartContainer title="Incident Volume Trend" sub="Daily reports over the last 30 days">
+              <AreaChart data={trend}>
+                <defs>
+                  <linearGradient id="colorReports" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#f97316" stopOpacity={0.3}/>
+                    <stop offset="95%" stopColor="#f97316" stopOpacity={0}/>
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                <XAxis dataKey="date" tick={{fontSize: 12}} axisLine={false} tickLine={false} dy={10} />
+                <YAxis tick={{fontSize: 12}} axisLine={false} tickLine={false} />
+                <Tooltip contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }} />
+                <Area type="monotone" dataKey="reports" stroke="#f97316" strokeWidth={3} fillOpacity={1} fill="url(#colorReports)" name="Reports" />
+              </AreaChart>
+            </ChartContainer>
+          )}
+
+          {status.length > 0 && (
+            <ChartContainer title="Workflow Status" sub="Current state of all incident tickets">
+              <PieChart>
+                <Pie
+                  data={status}
+                  cx="50%"
+                  cy="50%"
+                  innerRadius={60}
+                  outerRadius={100}
+                  paddingAngle={5}
+                  dataKey="count"
+                  nameKey="_id"
+                >
+                  {status.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={STATUS_COLORS[entry._id] || '#64748b'} />
+                  ))}
+                </Pie>
+                <Tooltip contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }} />
+                <Legend verticalAlign="bottom" />
+              </PieChart>
+            </ChartContainer>
+          )}
+
           {severity.length > 0 && (
             <ChartContainer title="Severity Distribution" sub="Incidents categorized by severity level">
               <BarChart data={severity}>
