@@ -68,6 +68,9 @@ const waterScheduleSchema = new mongoose.Schema({
   }
 });
 
+// TTL Index - MongoDB auto-deletes when current time > endDate
+waterScheduleSchema.index({ endDate: 1 }, { expireAfterSeconds: 0 });
+
 // Update the updatedAt timestamp before saving
 // Update the updatedAt timestamp before saving
 waterScheduleSchema.pre('save', function () {

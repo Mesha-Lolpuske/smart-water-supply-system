@@ -4,7 +4,8 @@ import {
   getIncidentAnalytics,
   getActivityAnalytics,
   getDetailedReports,
-  getZoneStatus
+  getZoneStatus,
+  refreshZoneStatus
 } from '../controllers/analyticsController.js';
 import { authenticateUser, adminOnly } from '../middleware/authMiddleware.js';
 
@@ -25,6 +26,20 @@ router.use(authenticateUser);
  *         description: Zone status data
  */
 router.get('/zones/status', getZoneStatus);
+
+/**
+ * @swagger
+ * /api/analytics/zones/refresh:
+ *   post:
+ *     summary: Manually refresh zone status and deactivate expired items
+ *     tags: [Analytics]
+ *     security:
+ *       - cookieAuth: []
+ *     responses:
+ *       200:
+ *         description: Success message and refreshed data
+ */
+router.post('/zones/refresh', refreshZoneStatus);
 
 // Admin-only routes below
 router.use(adminOnly);

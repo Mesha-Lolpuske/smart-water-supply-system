@@ -32,7 +32,7 @@ export default function AdminMaintenanceTable({ reports, searchQuery }) {
       case 'Reported': return 'bg-orange-100 text-orange-700';
       case 'Technician Assigned': return 'bg-blue-100 text-blue-700';
       case 'In Progress': return 'bg-sky-100 text-sky-700';
-      case 'Fixed': return 'bg-emerald-100 text-emerald-700';
+      case 'Fixed': return 'bg-indigo-100 text-indigo-700';
       case 'Resolved': return 'bg-emerald-600 text-white';
       default: return 'bg-slate-100 text-slate-700';
     }
@@ -103,7 +103,7 @@ export default function AdminMaintenanceTable({ reports, searchQuery }) {
                       )}
                     </div>
                     <p className="text-[10px] text-slate-400 flex items-center gap-1">
-                      <MapPin size={10} /> {report.location}
+                      <MapPin size={10} /> {report.supplyArea} • {report.specificLocation}
                     </p>
                   </td>
                   <td className="px-2 py-4 text-slate-600 font-medium">
@@ -111,7 +111,7 @@ export default function AdminMaintenanceTable({ reports, searchQuery }) {
                   </td>
                   <td className="px-2 py-4">
                     <span className={`inline-block px-2 py-0.5 text-[10px] font-black uppercase tracking-tighter rounded-md ${getStatusColor(report.status)}`}>
-                      {report.status}
+                      {report.status === 'Fixed' ? 'Ready for Resolution' : report.status}
                     </span>
                   </td>
                   <td className="px-2 py-4 text-right text-[10px] font-bold text-slate-400">

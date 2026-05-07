@@ -21,6 +21,19 @@ const announcementSchema = new mongoose.Schema({
     enum: ['low', 'normal', 'high', 'urgent'],
     default: 'normal'
   },
+  supplyArea: {
+    type: String,
+    enum: [
+      'All Areas',
+      'Njoro Center', 
+      'Egerton University Area', 
+      'Kihingo Ward', 
+      'Lare Ward', 
+      'Nesuit', 
+      'Mau Narok'
+    ],
+    default: 'All Areas'
+  },
   isActive: {
     type: Boolean,
     default: true
@@ -30,7 +43,8 @@ const announcementSchema = new mongoose.Schema({
     default: Date.now
   },
   expiryDate: {
-    type: Date // Optional - announcement can expire
+    type: Date,
+    default: () => new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) // Default 30 days
   },
   createdBy: {
     type: mongoose.Schema.Types.ObjectId,
@@ -50,6 +64,9 @@ const announcementSchema = new mongoose.Schema({
     default: Date.now
   }
 });
+
+// TTL Index - MongoDB auto-deletes when current time > expiryDate
+announcementSchema.index({ expiryDate: 1 }, { expireAfterSeconds: 0 });
 
 // Update the updatedAt timestamp before saving
 announcementSchema.pre('save', function() {

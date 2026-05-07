@@ -42,6 +42,10 @@ const notificationSchema = new mongoose.Schema({
   readAt: {
     type: Date
   },
+  expiresAt: {
+    type: Date,
+    default: () => new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) // Default 30 days
+  },
   createdAt: {
     type: Date,
     default: Date.now
@@ -50,6 +54,8 @@ const notificationSchema = new mongoose.Schema({
 
 // Index for faster queries
 notificationSchema.index({ recipient: 1, isRead: 1, createdAt: -1 });
+// TTL Index - MongoDB will auto-delete when current time > expiresAt
+notificationSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 });
 
 // Method to mark notification as read
 notificationSchema.methods.markAsRead = function() {

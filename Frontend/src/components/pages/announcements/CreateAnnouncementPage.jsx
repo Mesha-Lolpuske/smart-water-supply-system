@@ -5,6 +5,7 @@ import { useState } from 'react'
 import { toast } from 'react-toastify'
 import { useAuth } from '../../hooks/useAuth'
 import { announcementService } from '../../services/announcement'
+import { njoroAreas } from '../../utils/njoroData'
 
 function CreateAnnouncementPage() {
   const navigate = useNavigate()
@@ -16,7 +17,9 @@ function CreateAnnouncementPage() {
     content: '',
     category: 'general',
     priority: 'normal',
-    isActive: true
+    supplyArea: 'All Areas',
+    isActive: true,
+    expiryDate: '' // Successfully included in state
   })
 
   const isAdmin = user?.role === 'admin'
@@ -79,7 +82,7 @@ function CreateAnnouncementPage() {
         <p className="mb-8 text-slate-600">Broadcast important information to all citizens</p>
 
         {error && (
-          <div className="p-4 mb-6 bg-red-50 text-red-600 border border-red-100 rounded-lg font-bold">
+          <div className="p-4 mb-6 font-bold text-red-600 border border-red-100 rounded-lg bg-red-50">
             {error}
           </div>
         )}
@@ -127,6 +130,35 @@ function CreateAnnouncementPage() {
                 <option value="high">High</option>
                 <option value="urgent">Urgent</option>
               </select>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block mb-2 text-sm font-semibold text-blue-950">Target Area</label>
+              <select 
+                name="supplyArea" 
+                value={formData.supplyArea} 
+                onChange={handleChange} 
+                className="w-full px-4 py-3 border-2 rounded-lg border-sky-200 focus:outline-none focus:border-sky-400"
+              >
+                <option value="All Areas">All Areas (Global)</option>
+                {njoroAreas.map(area => (
+                  <option key={area.id} value={area.name}>{area.name}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="block mb-2 text-sm font-semibold text-blue-950">Auto-Expire Date (Optional)</label>
+              <input 
+                type="date" 
+                name="expiryDate" 
+                min={new Date().toISOString().split("T")[0]}
+                value={formData.expiryDate} 
+                onChange={handleChange} 
+                className="w-full px-4 py-3 border-2 rounded-lg border-sky-200 focus:outline-none focus:border-sky-400 text-slate-700" 
+              />
+              <p className="mt-1 text-xs text-slate-500">Leave blank for no expiration.</p>
             </div>
           </div>
 

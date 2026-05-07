@@ -14,7 +14,7 @@ function EditReport() {
     title: '',
     description: '',
     severity: 'medium',
-    location: '',
+    supplyArea: '',  // ✅ Changed from 'location' to 'supplyArea'
     reportType: ''
   })
   const [loading, setLoading] = useState(true)
@@ -33,7 +33,7 @@ function EditReport() {
             title: res.report.title,
             description: res.report.description,
             severity: res.report.severity,
-            location: res.report.location,
+            supplyArea: res.report.supplyArea,  // ✅ Changed from res.report.location
             reportType: res.report.reportType
           })
         }
@@ -48,13 +48,13 @@ function EditReport() {
   }, [id])
 
   const isOwner = report && (report.reportedBy?._id === user?.id || report.reportedBy === user?.id)
-  const canEdit = isOwner && report?.status === 'pending'
+  const canEdit = isOwner && ['Reported', 'Technician Assigned'].includes(report?.status)
 
   if (loading) {
     return (
       <DashboardLayout isAdmin={false}>
         <div className="flex items-center justify-center h-96">
-          <div className="w-12 h-12 border-4 border-t-sky-500 border-sky-100 rounded-full animate-spin"></div>
+          <div className="w-12 h-12 border-4 rounded-full border-t-sky-500 border-sky-100 animate-spin"></div>
         </div>
       </DashboardLayout>
     )
@@ -119,8 +119,20 @@ function EditReport() {
         <p className="mb-8 text-slate-600">Update your report details</p>
 
         {error && (
-          <div className="p-4 mb-6 bg-red-50 text-red-600 border border-red-100 rounded-lg font-bold">
+          <div className="p-4 mb-6 font-bold text-red-600 border border-red-100 rounded-lg bg-red-50">
             {error}
+          </div>
+        )}
+
+        {/* ✅ Added warning for Technician Assigned status */}
+        {report?.status === 'Technician Assigned' && (
+          <div className="p-4 mb-6 border border-yellow-200 rounded-lg bg-yellow-50">
+            <p className="text-sm font-bold text-yellow-800">
+              ⚠️ A technician has been assigned to this report.
+            </p>
+            <p className="text-sm text-yellow-700">
+              Changes you make may affect the assigned technician's work. Please double-check your corrections.
+            </p>
           </div>
         )}
 
@@ -131,8 +143,8 @@ function EditReport() {
           </div>
 
           <div>
-            <label className="block mb-2 text-sm font-semibold text-blue-950">Location</label>
-            <input type="text" name="location" value={formData.location} onChange={handleChange} className="w-full px-4 py-3 border-2 rounded-lg border-sky-200 focus:outline-none focus:border-sky-400" required />
+            <label className="block mb-2 text-sm font-semibold text-blue-950">Supply Area</label>  {/* ✅ Changed label */}
+            <input type="text" name="supplyArea" value={formData.supplyArea} onChange={handleChange} className="w-full px-4 py-3 border-2 rounded-lg border-sky-200 focus:outline-none focus:border-sky-400" required />
           </div>
 
           <div className="grid grid-cols-2 gap-4">

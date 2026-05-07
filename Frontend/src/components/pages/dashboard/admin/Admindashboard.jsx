@@ -105,7 +105,8 @@ function AdminDashboard() {
         <div className="absolute top-0 right-0 -mt-32 -mr-32 rounded-full w-96 h-96 bg-sky-500/10 blur-3xl"></div>
       </div>
 
-      <AdminMap />
+      {/* PASSING THE REPORTS INTO THE MAP */}
+      <AdminMap reports={recentReports} />
 
       <AdminStatsGrid stats={stats} />
 

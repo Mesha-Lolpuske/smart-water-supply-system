@@ -29,8 +29,9 @@ export const getAdminDashboardStats = async (req, res) => {
     const totalReports = await WaterReport.countDocuments();
     const pendingReports = await WaterReport.countDocuments({ status: 'Reported' });
     const investigatingReports = await WaterReport.countDocuments({ status: { $in: ['Technician Assigned', 'In Progress'] } });
-    const resolvedReports = await WaterReport.countDocuments({ status: { $in: ['Fixed', 'Resolved'] } });
-    const criticalReports = await WaterReport.countDocuments({ severity: 'critical' });
+    const fixedReports = await WaterReport.countDocuments({ status: 'Fixed' });
+    const resolvedReports = await WaterReport.countDocuments({ status: 'Resolved' });
+    const criticalReports = await WaterReport.countDocuments({ severity: 'critical', status: { $nin: ['Resolved', 'Cancelled'] } });
 
     // Reports by type
     const reportsByType = await WaterReport.aggregate([
@@ -99,6 +100,7 @@ export const getAdminDashboardStats = async (req, res) => {
           total: totalReports,
           pending: pendingReports,
           investigating: investigatingReports,
+          fixed: fixedReports,
           resolved: resolvedReports,
           critical: criticalReports,
           recentReports: recentReports,
@@ -136,9 +138,13 @@ export const getUserDashboardStats = async (req, res) => {
       reportedBy: req.user.id, 
       status: { $in: ['Reported', 'Technician Assigned', 'In Progress'] } 
     });
+    const fixedReports = await WaterReport.countDocuments({ 
+      reportedBy: req.user.id, 
+      status: 'Fixed' 
+    });
     const resolvedReports = await WaterReport.countDocuments({ 
       reportedBy: req.user.id, 
-      status: { $in: ['Fixed', 'Resolved'] } 
+      status: 'Resolved' 
     });
 
     // User's Notification Statistics
@@ -183,6 +189,7 @@ export const getUserDashboardStats = async (req, res) => {
         myReports: {
           total: totalReports,
           pending: pendingReports,
+          fixed: fixedReports,
           resolved: resolvedReports
         },
         myNotifications: {

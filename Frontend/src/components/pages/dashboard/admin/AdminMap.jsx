@@ -1,11 +1,11 @@
 import { useState, useEffect, useMemo } from 'react';
 import { MapContainer, TileLayer, Polygon, Popup, ZoomControl, ScaleControl, LayersControl, Marker } from 'react-leaflet';
 import { Map, MapPin, RefreshCw } from 'lucide-react';
-import { njoroAreas, infrastructure } from '../../../utils/njoroData';
+import { njoroAreas, infrastructure } from "../../../utils/njoroData";
 import { analyticsService } from '../../../services/analyticsService';
 import 'leaflet/dist/leaflet.css';
 
-export default function AdminMap() {
+export default function AdminMap({ reports = [], onRefresh }) {
   const [selectedZone, setSelectedZone] = useState(null);
   const [mapLoading, setMapLoading] = useState(true);
   const [mapError, setMapError] = useState(null);
@@ -16,12 +16,28 @@ export default function AdminMap() {
     fetchZoneStatus();
   }, []);
 
+  useEffect(() => {
+    const handleReportStatusChange = (event) => {
+      console.log('Report status changed, refreshing map...', event.detail);
+      fetchZoneStatus();
+    };
+    
+    window.addEventListener('reportStatusChanged', handleReportStatusChange);
+    
+    return () => {
+      window.removeEventListener('reportStatusChanged', handleReportStatusChange);
+    };
+  }, []);
+
   const fetchZoneStatus = async () => {
     try {
       setRefreshing(true);
       const res = await analyticsService.getZoneStatus();
       if (res.success) {
         setDynamicStatuses(res.data);
+      }
+      if (onRefresh) {
+        await onRefresh();
       }
     } catch (error) {
       console.error('Error fetching zone status:', error);
@@ -32,33 +48,39 @@ export default function AdminMap() {
     }
   };
 
+  // ✅ FIXED: Use dynamicStatuses from API directly instead of recalculating
   const mergedZones = useMemo(() => {
     return njoroAreas.map(area => {
       const dynamic = dynamicStatuses.find(d => d.name === area.name);
+      
       return {
         ...area,
-        status: dynamic ? dynamic.status : area.status,
-        reason: dynamic ? dynamic.reason : 'No data',
+        status: dynamic ? dynamic.status : 'good',
+        reason: dynamic ? dynamic.reason : 'Operational - All clear',
         reportCount: dynamic ? dynamic.reportCount : 0,
+        criticalCount: dynamic ? dynamic.criticalCount : 0,
+        warningCount: dynamic ? dynamic.warningCount : 0,
         activeSchedules: dynamic ? dynamic.activeSchedules : 0
       };
     });
   }, [dynamicStatuses]);
 
+  // ✅ FIXED: Updated color mapping
   const getZoneStatusColor = (status) => {
     switch (status) {
-      case 'good': return '#10b981';
-      case 'warning': return '#f59e0b';
-      case 'critical': return '#ef4444';
+      case 'good': return '#10b981'; // Green
+      case 'warning': return '#f59e0b'; // Yellow
+      case 'critical': return '#ef4444'; // Red
       default: return '#6b7280';
     }
   };
 
+  // ✅ FIXED: Updated text mapping to match your requirements
   const getZoneStatusText = (status) => {
     switch (status) {
-      case 'good': return 'Water Available';
-      case 'warning': return 'Limited Supply';
-      case 'critical': return 'Supply Cut';
+      case 'good': return 'Normal Supply';
+      case 'warning': return 'Low Pressure / Leak / Rationing';
+      case 'critical': return 'No Water / Contamination / Emergency';
       default: return 'Unknown';
     }
   };
@@ -72,14 +94,12 @@ export default function AdminMap() {
     }
   };
 
-  const getInfrastructureColor = (status) => {
-    switch (status) {
-      case 'operational': return '#10b981';
-      case 'maintenance': return '#f59e0b';
-      case 'offline': return '#ef4444';
-      default: return '#6b7280';
-    }
-  };
+  // ✅ FIXED: Updated legend to match new logic
+  const legendItems = [
+    { color: '#10b981', label: 'Normal Supply', description: 'No active issues or rationing' },
+    { color: '#f59e0b', label: 'Warning', description: 'Pipe Leak / Low Pressure / Rationing' },
+    { color: '#ef4444', label: 'Critical', description: 'No Water Supply / Contamination / Emergency' }
+  ];
 
   return (
     <div className="mb-8">
@@ -103,18 +123,12 @@ export default function AdminMap() {
               <RefreshCw size={14} className={refreshing ? 'animate-spin' : ''} />
               SYNC LIVE
             </button>
-            <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-green-50">
-              <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-              <span className="text-xs font-medium text-green-700">Operational</span>
-            </div>
-            <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-yellow-50">
-              <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
-              <span className="text-xs font-medium text-yellow-700">Maintenance</span>
-            </div>
-            <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-red-50">
-              <div className="w-2 h-2 bg-red-500 rounded-full"></div>
-              <span className="text-xs font-medium text-red-700">Critical</span>
-            </div>
+            {legendItems.map((item, idx) => (
+              <div key={idx} className="flex items-center gap-2 px-3 py-1 rounded-full" style={{ backgroundColor: `${item.color}20` }}>
+                <div className="w-2 h-2 rounded-full" style={{ backgroundColor: item.color }}></div>
+                <span className="text-xs font-medium" style={{ color: item.color }}>{item.label}</span>
+              </div>
+            ))}
           </div>
         </div>
         
@@ -181,7 +195,7 @@ export default function AdminMap() {
                     }}
                   >
                     <Popup>
-                      <div className="p-2 min-w-[200px]">
+                      <div className="p-2 min-w-[220px]">
                         <h3 className="font-bold text-blue-950">{zone.name}</h3>
                         <div className="my-2">
                           <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${
@@ -193,8 +207,9 @@ export default function AdminMap() {
                         </div>
                         <p className="mb-2 text-xs italic font-bold text-slate-500">"{zone.reason}"</p>
                         <div className="space-y-1 text-xs text-gray-600">
-                          <p><strong>Active Issues:</strong> {zone.reportCount}</p>
-                          <p><strong>Live Schedules:</strong> {zone.activeSchedules}</p>
+                          <p><strong>Critical Issues:</strong> {zone.criticalCount || 0}</p>
+                          <p><strong>Warning Issues:</strong> {zone.warningCount || 0}</p>
+                          <p><strong>Active Schedules:</strong> {zone.activeSchedules}</p>
                         </div>
                       </div>
                     </Popup>
@@ -236,9 +251,9 @@ export default function AdminMap() {
                     <span className="font-medium">{getZoneStatusText(selectedZone.status)}</span>
                   </div>
                   <div className="space-y-1 text-sm text-gray-600">
-                    <p><strong>Population:</strong> {selectedZone.population.toLocaleString()}</p>
-                    <p><strong>Pressure:</strong> {selectedZone.waterPressure}%</p>
-                    <p><strong>Schedule:</strong> {selectedZone.nextSupply}</p>
+                    <p><strong>Population:</strong> {selectedZone.population?.toLocaleString() || 'N/A'}</p>
+                    <p><strong>Pressure:</strong> {selectedZone.waterPressure || 'N/A'}%</p>
+                    <p><strong>Schedule:</strong> {selectedZone.nextSupply || 'N/A'}</p>
                   </div>
                   <div className="pt-2 space-y-2">
                     <button className="w-full px-3 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700">Update Status</button>
@@ -261,8 +276,12 @@ export default function AdminMap() {
                   <span className="font-medium">{mergedZones.length}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-green-600">Operational:</span>
+                  <span className="text-green-600">Normal:</span>
                   <span className="font-medium text-green-600">{mergedZones.filter(z => z.status === 'good').length}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-yellow-600">Warning:</span>
+                  <span className="font-medium text-yellow-600">{mergedZones.filter(z => z.status === 'warning').length}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-red-600">Critical:</span>

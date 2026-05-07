@@ -6,7 +6,7 @@ import Announcement from '../models/Announcement.js';
 // @access  Admin only
 export const createAnnouncement = async (req, res) => {
   try {
-    const { title, content, category, priority, publishDate, expiryDate } = req.body;
+    const { title, content, category, priority, supplyArea, publishDate, expiryDate } = req.body;
 
     // Validation
     if (!title || !content) {
@@ -25,6 +25,7 @@ export const createAnnouncement = async (req, res) => {
       content,
       category: category || 'general',
       priority: priority || 'normal',
+      supplyArea: supplyArea || 'All Areas',
       publishDate: publishDate || Date.now(),
       expiryDate: expiryDate || null,
       createdBy: req.user.id
@@ -48,10 +49,24 @@ export const createAnnouncement = async (req, res) => {
 // @access  Public
 export const getAllAnnouncements = async (req, res) => {
   try {
-    const { category, priority, isActive } = req.query;
+    const { category, priority, isActive, supplyArea } = req.query;
+    const currentDate = new Date();
 
     // Build filter
-    let filter = {};
+    let filter = {
+      $or: [
+        { expiryDate: null },
+        { expiryDate: { $gte: currentDate } }
+      ]
+    };
+    
+    // If user is not admin, only show relevant areas
+    if (req.user && req.user.role !== 'admin') {
+      filter.supplyArea = { $in: [req.user.supplyArea, 'All Areas'] };
+    } else if (supplyArea && supplyArea !== 'All Areas') {
+      filter.supplyArea = supplyArea;
+    }
+
     if (category) filter.category = category;
     if (priority) filter.priority = priority;
     if (isActive !== undefined) filter.isActive = isActive === 'true';
@@ -77,15 +92,22 @@ export const getAllAnnouncements = async (req, res) => {
 export const getActiveAnnouncements = async (req, res) => {
   try {
     const currentDate = new Date();
-
-    const announcements = await Announcement.find({
+    
+    let filter = {
       isActive: true,
       publishDate: { $lte: currentDate },
       $or: [
         { expiryDate: null },
         { expiryDate: { $gte: currentDate } }
       ]
-    })
+    };
+
+    // Filter by user's area if not admin
+    if (req.user && req.user.role !== 'admin') {
+      filter.supplyArea = { $in: [req.user.supplyArea, 'All Areas'] };
+    }
+
+    const announcements = await Announcement.find(filter)
       .populate('createdBy', 'name')
       .sort({ priority: -1, publishDate: -1 });
 

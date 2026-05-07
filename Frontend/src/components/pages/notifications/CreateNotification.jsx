@@ -5,6 +5,7 @@ import { useState, useEffect } from 'react'
 import { toast } from 'react-toastify'
 import { notificationService } from '../../services/notificationService'
 import { userService } from '../../services/userService'
+import { njoroAreas } from '../../utils/njoroData'
 
 function CreateNotification() {
   const navigate = useNavigate()
@@ -14,8 +15,9 @@ function CreateNotification() {
   const [error, setError] = useState('')
   
   const [formData, setFormData] = useState({
-    recipientType: 'broadcast', // 'broadcast' or 'individual'
+    recipientType: 'broadcast', // 'broadcast', 'region', or 'individual'
     recipient: '',
+    supplyArea: 'All Areas',
     title: '',
     message: '',
     type: 'info',
@@ -57,18 +59,24 @@ function CreateNotification() {
       return
     }
 
+    if (formData.recipientType === 'region' && (!formData.supplyArea || formData.supplyArea === 'All Areas')) {
+      setError('Please select a specific region')
+      return
+    }
+
     try {
       setLoading(true)
       setError('')
       
       let res;
-      if (formData.recipientType === 'broadcast') {
-        // Use broadcast endpoint
+      if (formData.recipientType === 'broadcast' || formData.recipientType === 'region') {
+        // Use broadcast endpoint with optional supplyArea
         res = await notificationService.broadcastNotification({
           title: formData.title,
           message: formData.message,
           type: formData.type,
-          priority: formData.priority
+          priority: formData.priority,
+          supplyArea: formData.recipientType === 'region' ? formData.supplyArea : 'All Areas'
         })
       } else {
         // Use individual create endpoint
@@ -129,32 +137,64 @@ function CreateNotification() {
             <label className="block mb-4 text-xs font-black text-blue-950 uppercase tracking-widest">
               Select Audience
             </label>
-            <div className="flex gap-4">
+            <div className="flex flex-wrap gap-3">
               <button
                 type="button"
                 onClick={() => setFormData({...formData, recipientType: 'broadcast'})}
-                className={`flex-1 flex items-center justify-center gap-2 p-4 rounded-xl font-bold transition-all border-2 ${
+                className={`flex-1 min-w-[140px] flex items-center justify-center gap-2 p-3 rounded-xl font-bold transition-all border-2 text-[10px] tracking-tighter ${
                   formData.recipientType === 'broadcast' 
                     ? 'bg-blue-950 text-white border-blue-950 shadow-lg' 
                     : 'bg-white text-slate-500 border-slate-200 hover:border-sky-300'
                 }`}
               >
-                <Users size={20} />
+                <Users size={18} />
                 ALL CITIZENS
               </button>
               <button
                 type="button"
+                onClick={() => setFormData({...formData, recipientType: 'region'})}
+                className={`flex-1 min-w-[140px] flex items-center justify-center gap-2 p-3 rounded-xl font-bold transition-all border-2 text-[10px] tracking-tighter ${
+                  formData.recipientType === 'region' 
+                    ? 'bg-blue-950 text-white border-blue-950 shadow-lg' 
+                    : 'bg-white text-slate-500 border-slate-200 hover:border-sky-300'
+                }`}
+              >
+                <MessageSquare size={18} />
+                BY REGION
+              </button>
+              <button
+                type="button"
                 onClick={() => setFormData({...formData, recipientType: 'individual'})}
-                className={`flex-1 flex items-center justify-center gap-2 p-4 rounded-xl font-bold transition-all border-2 ${
+                className={`flex-1 min-w-[140px] flex items-center justify-center gap-2 p-3 rounded-xl font-bold transition-all border-2 text-[10px] tracking-tighter ${
                   formData.recipientType === 'individual' 
                     ? 'bg-blue-950 text-white border-blue-950 shadow-lg' 
                     : 'bg-white text-slate-500 border-slate-200 hover:border-sky-300'
                 }`}
               >
-                <User size={20} />
+                <User size={18} />
                 SPECIFIC USER
               </button>
             </div>
+
+            {formData.recipientType === 'region' && (
+              <div className="mt-6 animate-in fade-in slide-in-from-top-2">
+                <label className="block mb-2 text-xs font-bold text-slate-500 uppercase tracking-widest">
+                  Choose Region
+                </label>
+                <select
+                  name="supplyArea"
+                  value={formData.supplyArea}
+                  onChange={handleChange}
+                  className="w-full px-4 py-3 border-2 rounded-xl border-sky-200 focus:outline-none focus:border-sky-400 bg-white"
+                  required
+                >
+                  <option value="">Select a region...</option>
+                  {njoroAreas.map(area => (
+                    <option key={area.id} value={area.name}>{area.name}</option>
+                  ))}
+                </select>
+              </div>
+            )}
 
             {formData.recipientType === 'individual' && (
               <div className="mt-6 animate-in fade-in slide-in-from-top-2">

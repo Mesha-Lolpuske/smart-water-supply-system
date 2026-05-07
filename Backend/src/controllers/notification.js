@@ -41,7 +41,7 @@ export const createNotification = async (req, res) => {
 // @access  Admin only
 export const broadcastNotification = async (req, res) => {
   try {
-    const { type, title, message, relatedId, onModel, priority } = req.body;
+    const { type, title, message, relatedId, onModel, priority, supplyArea } = req.body;
 
     // Validation
     if (!type || !title || !message) {
@@ -51,8 +51,14 @@ export const broadcastNotification = async (req, res) => {
     // Import User model
     const User = (await import('../models/User.js')).default;
 
-    // Get all verified users
-    const users = await User.find({ isVerified: true }, '_id name phone');
+    // Build user filter
+    let userFilter = { isVerified: true };
+    if (supplyArea && supplyArea !== 'All Areas') {
+      userFilter.supplyArea = supplyArea;
+    }
+
+    // Get targeted users
+    const users = await User.find(userFilter, '_id name phone');
 
     // Create notifications for all users
     const notifications = users.map(user => ({
@@ -62,14 +68,15 @@ export const broadcastNotification = async (req, res) => {
       message,
       relatedId: relatedId || null,
       onModel: onModel || null,
-      priority: priority || 'normal'
+      priority: priority || 'normal',
+      expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) // 30 days expiry
     }));
 
     await Notification.insertMany(notifications);
 
     res.status(201).json({
       success: true,
-      message: `Notification sent to ${users.length} users`,
+      message: `Notification sent to ${users.length} users ${supplyArea ? `in ${supplyArea}` : 'globally'}`,
       count: users.length
     });
   } catch (error) {

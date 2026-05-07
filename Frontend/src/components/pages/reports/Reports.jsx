@@ -1,5 +1,5 @@
 import DashboardLayout from '../../layout/DashboardLayout'
-import { Filter, Eye, Trash2, CheckCircle, AlertTriangle, User, MapPin, Clock, Search, Image as ImageIcon } from 'lucide-react'
+import { Filter, Eye, Trash2, CheckCircle, AlertTriangle, User, MapPin, Clock, Search, Image as ImageIcon, ShieldCheck } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { useState, useEffect } from 'react'
 import { reportService } from '../../services/reportService'
@@ -32,14 +32,23 @@ function Reports() {
   }
 
   const handleMarkResolved = async (id) => {
+    if (!window.confirm("Verify that the technician has fixed this issue. Marking this as Resolved will clear the alert and turn the map Green. Proceed?")) {
+      return;
+    }
     try {
       const res = await reportService.updateStatus(id, 'Resolved')
       if (res.success) {
         setReports(prev => prev.map(r => r._id === id ? { ...r, status: 'Resolved' } : r))
         toast.success('Report marked as resolved')
+        
+        // ✅ Dispatch event to refresh the map
+        window.dispatchEvent(new CustomEvent('reportStatusChanged', { 
+          detail: { reportId: id, status: 'Resolved' } 
+        }))
       }
-    } catch {
-      toast.error('Failed to update report status')
+    } catch (err) {
+      console.error('Error resolving report:', err)
+      toast.error(err.response?.data?.message || 'Failed to update report status')
     }
   }
 
@@ -50,6 +59,11 @@ function Reports() {
         if (res.success) {
           setReports(prev => prev.filter(r => r._id !== id))
           toast.success('Report deleted successfully')
+          
+          // ✅ Dispatch event to refresh the map
+          window.dispatchEvent(new CustomEvent('reportStatusChanged', { 
+            detail: { reportId: id, action: 'deleted' } 
+          }))
         }
       } catch {
         toast.error('Failed to delete report')
@@ -96,7 +110,7 @@ function Reports() {
     const matchesSeverity = filterSeverity === 'all' || r.severity === filterSeverity
     const matchesSearch = 
       r.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      r.location.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      r.supplyArea.toLowerCase().includes(searchQuery.toLowerCase()) ||  
       (r.reportedBy?.name || '').toLowerCase().includes(searchQuery.toLowerCase())
     
     return matchesSeverity && matchesSearch
@@ -212,7 +226,7 @@ function Reports() {
                       <User size={14} />
                       {report.reportedBy?.name || 'Anonymous User'}
                     </span>
-                    <span className="flex items-center gap-1.5"><MapPin size={16} className="text-sky-500" />{report.location}</span>
+                    <span className="flex items-center gap-1.5"><MapPin size={16} className="text-sky-500" />{report.supplyArea}</span>
                     <span className="flex items-center gap-1.5"><Clock size={16} className="text-sky-500" />{getRelativeTime(report.createdAt)}</span>
                     {report.issueImage && (
                       <span className="flex items-center gap-1.5 px-2 py-0.5 bg-blue-50 text-blue-600 rounded-lg text-[10px] uppercase font-black">
@@ -238,13 +252,14 @@ function Reports() {
                   Access Full Case
                 </button>
                 
-                {!['Fixed', 'Resolved'].includes(report.status) && (
+                {/* ✅ Show Resolve button ONLY when the technician has marked it as 'Fixed' */}
+                {report.status === 'Fixed' && (
                   <button 
                     onClick={() => handleMarkResolved(report._id)}
-                    className="flex items-center justify-center gap-2 px-6 py-3.5 text-xs font-black transition-all rounded-xl text-white bg-blue-950 hover:bg-blue-900 shadow-xl uppercase tracking-widest"
+                    className="flex items-center justify-center gap-2 px-6 py-3.5 text-xs font-black transition-all rounded-xl text-white bg-emerald-600 hover:bg-emerald-700 shadow-xl uppercase tracking-widest"
                   >
-                    <CheckCircle size={16} />
-                    RESOLVE
+                    <ShieldCheck size={16} />
+                    VERIFY & RESOLVE
                   </button>
                 )}
                 

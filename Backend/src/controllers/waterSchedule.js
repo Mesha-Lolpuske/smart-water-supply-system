@@ -48,9 +48,13 @@ export const createSchedule = async (req, res) => {
 export const getAllSchedules = async (req, res) => {
   try {
     const { isActive, scheduleType } = req.query;
+    const currentDate = new Date();
 
-    // Build filter
-    let filter = {};
+    // Build filter - Default to only non-expired
+    let filter = {
+      endDate: { $gte: currentDate }
+    };
+    
     if (isActive !== undefined) {
       filter.isActive = isActive === 'true';
     }

@@ -12,10 +12,10 @@ export default function UpdateWorkOrderModal({
 
   return (
     <div className="fixed inset-0 z-[2000] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
-      <div className="w-full max-w-lg p-8 bg-white shadow-2xl rounded-3xl animate-in zoom-in duration-300">
+      <div className="w-full max-w-lg p-8 duration-300 bg-white shadow-2xl rounded-3xl animate-in zoom-in">
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-2xl font-black text-blue-950 uppercase tracking-tight">Update Work Order</h2>
-          <button onClick={() => setShowUpdateModal(false)} className="p-2 text-slate-400 hover:text-red-500 transition-colors">
+          <h2 className="text-2xl font-black tracking-tight uppercase text-blue-950">Update Work Order</h2>
+          <button onClick={() => setShowUpdateModal(false)} className="p-2 transition-colors text-slate-400 hover:text-red-500">
             <X size={24} />
           </button>
         </div>
@@ -24,7 +24,8 @@ export default function UpdateWorkOrderModal({
           <div>
             <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 block">Task Status</label>
             <div className="grid grid-cols-2 gap-3">
-              {['In Progress', 'Cancelled'].map(status => (
+              {/* CHANGED: Removed Cancelled, Added Fixed so the Admin knows to review it! */}
+              {['In Progress', 'Fixed'].map(status => (
                 <button
                   key={status}
                   onClick={() => setUpdateForm({...updateForm, status})}
@@ -43,21 +44,21 @@ export default function UpdateWorkOrderModal({
             <textarea
               value={updateForm.notes}
               onChange={(e) => setUpdateForm({...updateForm, notes: e.target.value})}
-              className="w-full h-32 p-4 bg-slate-50 border-2 border-slate-100 rounded-2xl font-medium text-blue-950 focus:border-emerald-600 focus:ring-0 outline-none transition-all resize-none"
-              placeholder="Describe the repair work performed..."
+              className="w-full h-32 p-4 font-medium transition-all border-2 outline-none resize-none bg-slate-50 border-slate-100 rounded-2xl text-blue-950 focus:border-emerald-600 focus:ring-0"
+              placeholder="Describe the repair work performed or why it can't be completed..."
             />
           </div>
 
           <div className="flex gap-4 pt-4">
             <button
               onClick={() => setShowUpdateModal(false)}
-              className="flex-1 px-6 py-4 font-black text-slate-400 hover:text-blue-950 transition-colors uppercase tracking-widest text-xs"
+              className="flex-1 px-6 py-4 text-xs font-black tracking-widest uppercase transition-colors text-slate-400 hover:text-blue-950"
             >
               Cancel
             </button>
             <button
               onClick={handleUpdateSubmit}
-              className="flex-1 px-6 py-4 bg-emerald-600 text-white font-black rounded-2xl hover:bg-emerald-700 transition-all shadow-xl flex items-center justify-center gap-2 uppercase tracking-widest text-xs"
+              className="flex items-center justify-center flex-1 gap-2 px-6 py-4 text-xs font-black tracking-widest text-white uppercase transition-all shadow-xl bg-emerald-600 rounded-2xl hover:bg-emerald-700"
             >
               <Save size={18} />
               Save Update

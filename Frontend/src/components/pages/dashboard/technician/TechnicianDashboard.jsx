@@ -62,69 +62,69 @@ function TechnicianDashboard() {
       const dynamic = dynamicStatuses.find(d => d.name === area.name)
       return {
         ...area,
-        status: dynamic ? dynamic.status : area.status,
-        reason: dynamic ? dynamic.reason : 'No data',
+        status: dynamic ? dynamic.status : 'good', // Fallback to good
+        reason: dynamic ? dynamic.reason : 'System operational - All clear',
         reportCount: dynamic ? dynamic.reportCount : 0,
         activeSchedules: dynamic ? dynamic.activeSchedules : 0
       }
     })
   }, [dynamicStatuses])
 
-  const getZoneStatusColor = (status) => {
-    switch (status) {
-      case 'good': return '#10b981'
-      case 'warning': return '#f59e0b'
-      case 'critical': return '#ef4444'
-      default: return '#6b7280'
-    }
-  }
-
-  const getZoneStatusText = (status) => {
-    switch (status) {
-      case 'good': return 'Water Available'
-      case 'warning': return 'Limited Supply'
-      case 'critical': return 'Supply Cut'
-      default: return 'Unknown'
-    }
-  }
-
-  const getInfrastructureIcon = (type) => {
-    switch (type) {
-      case 'treatment': return '🏭'
-      case 'pump': return '⚙️'
-      case 'reservoir': return '💧'
-      default: return '📍'
-    }
-  }
-
-  const getInfrastructureColor = (status) => {
-    switch (status) {
-      case 'operational': return '#10b981'
-      case 'maintenance': return '#f59e0b'
-      case 'offline': return '#ef4444'
-      default: return '#6b7280'
-    }
-  }
-
   const fetchTechnicianData = async () => {
     try {
       setLoading(true)
       const res = await technicianService.getAssignedReports()
       if (res.success) {
-        setReports(res.reports || [])
+        setReports(res.reports)
       }
     } catch (error) {
       console.error('Error fetching technician data:', error)
+      toast.error('Failed to load work orders')
     } finally {
       setLoading(false)
     }
   }
 
-  const handleOpenUpdate = (report, e) => {
-    e.stopPropagation()
+  const getZoneStatusColor = (status) => {
+    switch (status) {
+      case 'good': return '#10b981';
+      case 'warning': return '#f59e0b';
+      case 'critical': return '#ef4444';
+      default: return '#6b7280';
+    }
+  };
+
+  const getZoneStatusText = (status) => {
+    switch (status) {
+      case 'good': return 'Normal Supply';
+      case 'warning': return 'Low Pressure / Leak / Rationing';
+      case 'critical': return 'No Water / Contamination / Emergency';
+      default: return 'Unknown';
+    }
+  };
+
+  const getInfrastructureIcon = (type) => {
+    switch (type) {
+      case 'treatment': return '🏭';
+      case 'pump': return '⚙️';
+      case 'reservoir': return '💧';
+      default: return '📍';
+    }
+  };
+
+  const getInfrastructureColor = (status) => {
+    switch (status) {
+      case 'operational': return '#10b981';
+      case 'maintenance': return '#f59e0b';
+      case 'offline': return '#ef4444';
+      default: return '#6b7280';
+    }
+  };
+
+  const handleOpenUpdate = (report) => {
     setSelectedReport(report)
     setUpdateForm({
-      status: report.status,
+      status: report.status === 'Fixed' || report.status === 'Resolved' ? report.status : 'In Progress',
       notes: report.technicianNotes || ''
     })
     setShowUpdateModal(true)
@@ -141,9 +141,15 @@ function TechnicianDashboard() {
         toast.success('Work order updated successfully')
         setShowUpdateModal(false)
         fetchTechnicianData()
+        
+        // ✅ Dispatch event to refresh map
+        window.dispatchEvent(new CustomEvent('reportStatusChanged', { 
+          detail: { id: selectedReport._id, status: updateForm.status } 
+        }));
       }
     } catch (error) {
-      toast.error('Failed to update work order')
+      console.error('Update error:', error);
+      toast.error(error.response?.data?.message || 'Failed to update work order')
     }
   }
 

@@ -1,4 +1,4 @@
-import { apiInstance, smsInstance } from '../config/brevo.js';
+
 
 /**
  * Send a professional OTP verification email
@@ -128,21 +128,4 @@ export const sendPasswordResetEmail = async (email, otp, name) => {
   }
 };
 
-/**
- * Send SMS verification code
- */
-export const sendOTPSMS = async (phoneNumber, otp) => {
-  try {
-    const result = await smsInstance.sendTransacSms({
-      sender: process.env.BREVO_SMS_SENDER || "SmartWater",
-      recipient: phoneNumber,
-      content: `Your Smart Water Supply verification code is: ${otp}. Valid for 10 minutes.`,
-      type: "transactional"
-    });
-    console.log('Brevo SMS sent successfully:', result.data.messageId);
-    return { success: true, messageId: result.data.messageId };
-  } catch (error) {
-    console.error('Brevo SMS Error:', error.body || error.message);
-    return { success: false, error: error.message };
-  }
-};
+

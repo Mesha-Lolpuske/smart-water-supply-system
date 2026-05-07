@@ -11,10 +11,12 @@ function EditSchedule() {
   const navigate = useNavigate();
   const { id } = useParams();
   const { user } = useAuth();
+  
+  // CHANGED: location to supplyArea in initial state
   const [formData, setFormData] = useState({
     title: "",
     description: "",
-    location: "",
+    supplyArea: "",
     scheduleType: "",
     startDate: "",
     endDate: "",
@@ -34,7 +36,6 @@ function EditSchedule() {
         setLoading(true);
         const res = await scheduleService.getScheduleById(id);
         if (res.success) {
-          // Format dates for input type="date"
           const schedule = res.schedule;
           setFormData({
             ...schedule,
@@ -101,7 +102,7 @@ function EditSchedule() {
     try {
       setSubmitting(true);
       setError("");
-      // DATE VALIDATION
+      
       if (formData.startDate < today) {
         setError("Start date cannot be in the past");
         setSubmitting(false);
@@ -114,14 +115,12 @@ function EditSchedule() {
         return;
       }
 
-      // TIME VALIDATION
       if (formData.startTime >= formData.endTime) {
         setError("End time must be after start time");
         setSubmitting(false);
         return;
       }
 
-      // DAY VALIDATION
       if (!formData.daysOfWeek || formData.daysOfWeek.length === 0) {
         setError("Please select at least one day of operation");
         setSubmitting(false);
@@ -151,15 +150,7 @@ function EditSchedule() {
     );
   }
 
-  const days = [
-    "Monday",
-    "Tuesday",
-    "Wednesday",
-    "Thursday",
-    "Friday",
-    "Saturday",
-    "Sunday",
-  ];
+  const days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
 
   return (
     <DashboardLayout isAdmin={true}>
@@ -211,11 +202,12 @@ function EditSchedule() {
 
           <div>
             <label className="block mb-2 text-sm font-semibold text-blue-950">
-              Target Location / Zone
+              Target Supply Area
             </label>
+            {/* CHANGED: name mapping to supplyArea */}
             <select
-              name="location"
-              value={formData.location || ""}
+              name="supplyArea"
+              value={formData.supplyArea || ""}
               onChange={handleChange}
               className="w-full px-4 py-3 border-2 rounded-lg border-sky-200 focus:outline-none focus:border-sky-400"
               required
@@ -256,7 +248,7 @@ function EditSchedule() {
                 type="date"
                 name="startDate"
                 value={formData.startDate}
-                 min={today}
+                min={today}
                 onChange={handleChange}
                 className="w-full px-4 py-3 border-2 rounded-lg border-sky-200 focus:outline-none focus:border-sky-400"
                 required
@@ -269,7 +261,7 @@ function EditSchedule() {
               <input
                 type="date"
                 name="endDate"
-                 min={today}
+                min={today}
                 value={formData.endDate}
                 onChange={handleChange}
                 className="w-full px-4 py-3 border-2 rounded-lg border-sky-200 focus:outline-none focus:border-sky-400"
@@ -320,7 +312,7 @@ function EditSchedule() {
                   <input
                     type="checkbox"
                     className="w-4 h-4"
-                   checked={formData.daysOfWeek && formData.daysOfWeek.includes(day)}
+                    checked={formData.daysOfWeek && formData.daysOfWeek.includes(day)}
                     onChange={() => handleDayToggle(day)}
                   />
                   <span className="text-sm text-slate-700">
